@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white"><h5 class="mb-0">Apply for Loan</h5></div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Member</label>
+                        <select name="member_id" class="form-select" required>
+                            <option value="">-- Select Member --</option>
+                            {% for m in members %}
+                            <option value="{{ m.id }}">{{ m.member_no }} - {{ m.full_name }} (Savings: {{ m.total_savings }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Eligibility limit is 3x the member's current savings.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Requested Principal (KES)</label>
+                        <input type="number" step="100" name="principal" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Repayment Period (Months)</label>
+                        <select name="duration_months" class="form-select">
+                            <option value="6">6 Months</option>
+                            <option value="12" selected>12 Months</option>
+                            <option value="24">24 Months</option>
+                            <option value="36">36 Months</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100 text-dark fw-bold">Submit Application</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white"><h5 class="mb-0">Loan Applications & Portfolio</h5></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Applicant</th>
+                                <th>Principal</th>
+                                <th>Repayable</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for l in loans %}
+                            <tr>
+                                <td>{{ l.member.full_name }}</td>
+                                <td>KES {{ "{:,.2f}".format(l.principal) }}</td>
+                                <td>KES {{ "{:,.2f}".format(l.total_payable) }}</td>
+                                <td>
+                                    <span class="badge {% if l.status == 'Approved' %}bg-success{% elif l.status == 'Pending' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                        {{ l.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if l.status == 'Pending' %}
+                                    <a href="{{ url_for('loan_action', loan_id=l.id, action='approve') }}" class="btn btn-sm btn-success">Approve</a>
+                                    <a href="{{ url_for('loan_action', loan_id=l.id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
+                                    {% else %}
+                                    <span class="text-muted small">Locked</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center py-3">No loans applied.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

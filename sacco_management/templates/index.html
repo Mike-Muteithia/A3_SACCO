@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 bg-primary text-white p-3">
+            <h6 class="text-uppercase small">Total Members</h6>
+            <h2 class="fw-bold mb-0">{{ total_members }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 bg-success text-white p-3">
+            <h6 class="text-uppercase small">Total Savings Pool</h6>
+            <h2 class="fw-bold mb-0">KES {{ "{:,.2f}".format(total_savings) }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 bg-info text-white p-3">
+            <h6 class="text-uppercase small">Loans Disbursed</h6>
+            <h2 class="fw-bold mb-0">KES {{ "{:,.2f}".format(total_loans_disbursed) }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 bg-warning text-dark p-3">
+            <h6 class="text-uppercase small">Pending Loans</h6>
+            <h2 class="fw-bold mb-0">{{ pending_loans_count }}</h2>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">Recently Registered Members</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Member No</th>
+                    <th>Full Name</th>
+                    <th>Phone</th>
+                    <th>Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in recent_members %}
+                <tr>
+                    <td><strong>{{ m.member_no }}</strong></td>
+                    <td>{{ m.full_name }}</td>
+                    <td>{{ m.phone }}</td>
+                    <td>{{ m.date_joined.strftime('%Y-%m-%d') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center py-3 text-muted">No registered members yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
