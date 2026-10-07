@@ -1,8 +1,10 @@
-from flask import Blueprint, render_template
+import io
+import pandas as pd
+from flask import Blueprint, render_template, make_response
 from flask_login import login_required
-from models import Member, Deposit, Loan
+from models import db, Member, Deposit, Loan, AuditLog
 from sqlalchemy import func
-from models import db
+from utils import role_required
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -22,3 +24,43 @@ def index():
     return render_template('index.html', total_members=total_members, total_savings=total_savings, 
                            total_loans_disbursed=total_loans_disbursed, pending_loans_count=pending_loans_count, 
                            recent_members=recent_members)
+
+
+@dashboard_bp.route('/export/members')
+@login_required
+def export_members():
+    members = Member.query.all()
+    
+    # Structure data for Pandas
+    data = []
+    for m in members:
+        data.append({
+            'Member No': m.member_no,
+            'Full Name': m.full_name,
+            'National ID': m.national_id,
+            'Phone': m.phone,
+            'Total Savings (KES)': m.total_savings,
+            'Share Capital (KES)': m.total_share_capital,
+            'Active Loans (KES)': m.active_loans_total
+        })
+        
+    df = pd.DataFrame(data)
+    out = io.BytesIO()
+    
+    # Write to Excel in memory
+    writer = pd.ExcelWriter(out, engine='openpyxl')
+    df.to_excel(writer, index=False, sheet_name='SACCO_Members')
+    writer.close()
+    
+    # Create the HTTP response to force file download
+    response = make_response(out.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=sacco_members_report.xlsx"
+    response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    return response
+
+@dashboard_bp.route('/logs')
+@login_required
+@role_required('Admin') # Only Admins can view the system logs
+def system_logs():
+    logs = AuditLog.query.order_by(AuditLog.timestamp.desc()).limit(200).all()
+    return render_template('logs.html', logs=logs)

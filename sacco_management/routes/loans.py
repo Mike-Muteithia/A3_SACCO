@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
-from flask_login import login_required
-from models import db, Loan, Member, LoanRepayment
+from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask_login import login_required, current_user
+from models import db, Loan, Member, LoanRepayment, AuditLog
 from forms import LoanForm, RepaymentForm
 from utils import role_required
 
@@ -46,6 +46,14 @@ def action(loan_id, action):
     elif action == 'reject':
         loan.status = 'Rejected'
         flash(f'Loan #{loan.id} rejected.', 'warning')
+
+    log = AuditLog(
+        user_id=current_user.id,
+        action=f"Marked Loan #{loan.id} as {loan.status}",
+        ip_address=request.remote_addr
+    )
+    db.session.add(log)
+    
     db.session.commit()
     return redirect(url_for('loans.index'))
 

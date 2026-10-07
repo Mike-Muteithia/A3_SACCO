@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
-from flask_login import login_required
-from models import db, Deposit, Member
+from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask_login import login_required, current_user
+from models import db, Deposit, Member, AuditLog
 from forms import DepositForm
 
 deposits_bp = Blueprint('deposits', __name__)
@@ -15,11 +15,19 @@ def index():
     if form.validate_on_submit():
         deposit = Deposit(
             member_id=form.member_id.data,
-            deposit_type=form.deposit_type.data,  # Capture the new field
+            deposit_type=form.deposit_type.data,
             amount=form.amount.data,
             reference=form.reference.data
         )
         db.session.add(deposit)
+
+        log = AuditLog(
+            user_id=current_user.id,
+            action=f"Recorded {deposit.deposit_type} of KES {deposit.amount} for Member ID {deposit.member_id}",
+            ip_address=request.remote_addr
+        )
+        db.session.add(log)
+
         db.session.commit()
         flash('Deposit recorded successfully.', 'success')
         return redirect(url_for('deposits.index'))

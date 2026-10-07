@@ -23,6 +23,11 @@
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('members.index') }}">Members</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('deposits.index') }}">Deposits & Shares</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('loans.index') }}">Loans</a></li>
+
+                        {% if current_user.role == 'Admin' %}
+                        <li class="nav-item"><a class="nav-link text-warning" href="{{ url_for('dashboard.system_logs') }}"><i class="bi bi-shield-check"></i> Audit Logs</a></li>
+                        {% endif %}
+                        
                         <li class="nav-item ms-3">
                             <span class="navbar-text text-light me-3 border-start ps-3">
                                 <i class="bi bi-person-circle"></i> {{ current_user.username }} ({{ current_user.role }})

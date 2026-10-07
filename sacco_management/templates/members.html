@@ -35,7 +35,12 @@
 
     <div class="col-md-8">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white"><h5 class="mb-0">Member Directory</h5></div>
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Member Directory</h5>
+                <a href="{{ url_for('dashboard.export_members') }}" class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-file-earmark-excel"></i> Export to Excel
+                </a>
+            </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-striped mb-0">
