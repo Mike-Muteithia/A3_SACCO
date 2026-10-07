@@ -1,12 +1,20 @@
-from app import app
-from models import db, Member, Deposit, Loan
-from datetime import datetime, timedelta
+from app import create_app
+from models import db, Member, Deposit, Loan, User
+from werkzeug.security import generate_password_hash
+from datetime import datetime
 
 def seed_database():
+    app = create_app()
     with app.app_context():
         print("Clearing existing data...")
         db.drop_all()
         db.create_all()
+
+        print("Creating Users...")
+        admin = User(username='admin', password_hash=generate_password_hash('admin123'), role='Admin')
+        officer = User(username='loanofficer', password_hash=generate_password_hash('loan123'), role='LoanOfficer')
+        teller = User(username='teller', password_hash=generate_password_hash('teller123'), role='Teller')
+        db.session.add_all([admin, officer, teller])
 
         print("Adding Members...")
         m1 = Member(member_no='M001', full_name='Kamau Njoroge', national_id='11223344', phone='0711223344', email='kamau@example.com')

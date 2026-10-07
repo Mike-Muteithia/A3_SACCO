@@ -6,27 +6,28 @@
             <div class="card-header bg-white"><h5 class="mb-0">New Member Registration</h5></div>
             <div class="card-body">
                 <form method="POST">
+                    {{ form.hidden_tag() }} <!-- Injects the CSRF token -->
                     <div class="mb-2">
-                        <label class="form-label">Member No</label>
-                        <input type="text" name="member_no" class="form-control" placeholder="e.g. M001" required>
+                        {{ form.member_no.label(class="form-label") }}
+                        {{ form.member_no(class="form-control", placeholder="e.g. M001") }}
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" name="full_name" class="form-control" required>
+                        {{ form.full_name.label(class="form-label") }}
+                        {{ form.full_name(class="form-control") }}
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">National ID / Passport</label>
-                        <input type="text" name="national_id" class="form-control" required>
+                        {{ form.national_id.label(class="form-label") }}
+                        {{ form.national_id(class="form-control") }}
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">Phone Number</label>
-                        <input type="text" name="phone" class="form-control" placeholder="07XXXXXXXX" required>
+                        {{ form.phone.label(class="form-label") }}
+                        {{ form.phone(class="form-control", placeholder="07XXXXXXXX") }}
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Email (Optional)</label>
-                        <input type="email" name="email" class="form-control">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control") }}
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Register Member</button>
+                    {{ form.submit(class="btn btn-primary w-100") }}
                 </form>
             </div>
         </div>

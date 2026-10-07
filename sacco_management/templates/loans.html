@@ -6,30 +6,21 @@
             <div class="card-header bg-white"><h5 class="mb-0">Apply for Loan</h5></div>
             <div class="card-body">
                 <form method="POST">
+                    {{ form.hidden_tag() }}
                     <div class="mb-3">
-                        <label class="form-label">Member</label>
-                        <select name="member_id" class="form-select" required>
-                            <option value="">-- Select Member --</option>
-                            {% for m in members %}
-                            <option value="{{ m.id }}">{{ m.member_no }} - {{ m.full_name }} (Savings: {{ m.total_savings }})</option>
-                            {% endfor %}
-                        </select>
+                        {{ form.member_id.label(class="form-label") }}
+                        {{ form.member_id(class="form-select") }}
                         <div class="form-text">Eligibility limit is 3x the member's current savings.</div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Requested Principal (KES)</label>
-                        <input type="number" step="100" name="principal" class="form-control" required>
+                        {{ form.principal.label(class="form-label") }}
+                        {{ form.principal(class="form-control", step="100") }}
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Repayment Period (Months)</label>
-                        <select name="duration_months" class="form-select">
-                            <option value="6">6 Months</option>
-                            <option value="12" selected>12 Months</option>
-                            <option value="24">24 Months</option>
-                            <option value="36">36 Months</option>
-                        </select>
+                        {{ form.duration_months.label(class="form-label") }}
+                        {{ form.duration_months(class="form-select") }}
                     </div>
-                    <button type="submit" class="btn btn-warning w-100 text-dark fw-bold">Submit Application</button>
+                    {{ form.submit(class="btn btn-warning w-100 text-dark fw-bold") }}
                 </form>
             </div>
         </div>
@@ -63,8 +54,8 @@
                                 </td>
                                 <td>
                                     {% if l.status == 'Pending' %}
-                                    <a href="{{ url_for('loan_action', loan_id=l.id, action='approve') }}" class="btn btn-sm btn-success">Approve</a>
-                                    <a href="{{ url_for('loan_action', loan_id=l.id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
+                                    <a href="{{ url_for('loans.action', loan_id=l.id, action='approve') }}" class="btn btn-sm btn-success">Approve</a>
+                                    <a href="{{ url_for('loans.action', loan_id=l.id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
                                     {% else %}
                                     <span class="text-muted small">Locked</span>
                                     {% endif %}
