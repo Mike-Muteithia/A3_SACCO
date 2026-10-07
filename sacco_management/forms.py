@@ -17,9 +17,15 @@ class MemberForm(FlaskForm):
 
 class DepositForm(FlaskForm):
     member_id = SelectField('Select Member', coerce=int, validators=[DataRequired()])
+    deposit_type = SelectField('Transaction Type', choices=[('Savings', 'Normal Savings'), ('Share Capital', 'Share Capital')], validators=[DataRequired()])
     amount = FloatField('Amount (KES)', validators=[DataRequired(), NumberRange(min=1)])
     reference = StringField('Payment Reference')
-    submit = SubmitField('Submit Deposit')
+    submit = SubmitField('Submit Transaction')
+
+class RepaymentForm(FlaskForm):
+    amount = FloatField('Repayment Amount (KES)', validators=[DataRequired(), NumberRange(min=1)])
+    reference = StringField('Payment Reference')
+    submit = SubmitField('Submit Repayment')
 
 class LoanForm(FlaskForm):
     member_id = SelectField('Member', coerce=int, validators=[DataRequired()])

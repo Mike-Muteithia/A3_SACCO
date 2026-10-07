@@ -12,6 +12,10 @@
                         {{ form.member_id(class="form-select") }}
                     </div>
                     <div class="mb-3">
+                        {{ form.deposit_type.label(class="form-label") }}
+                        {{ form.deposit_type(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
                         {{ form.amount.label(class="form-label") }}
                         {{ form.amount(class="form-control", step="0.01") }}
                     </div>
@@ -37,6 +41,7 @@
                                 <th>Member</th>
                                 <th>Reference</th>
                                 <th>Amount</th>
+                                <th>Type</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -46,6 +51,7 @@
                                 <td>{{ d.member.full_name }} ({{ d.member.member_no }})</td>
                                 <td><code>{{ d.reference or 'CASH' }}</code></td>
                                 <td class="fw-bold text-success">KES {{ "{:,.2f}".format(d.amount) }}</td>
+                                <td><span class="badge bg-secondary">{{ d.deposit_type }}</span></td>
                             </tr>
                             {% else %}
                             <tr><td colspan="4" class="text-center py-3">No deposits logged yet.</td></tr>

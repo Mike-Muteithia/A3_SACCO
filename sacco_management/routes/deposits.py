@@ -15,6 +15,7 @@ def index():
     if form.validate_on_submit():
         deposit = Deposit(
             member_id=form.member_id.data,
+            deposit_type=form.deposit_type.data,  # Capture the new field
             amount=form.amount.data,
             reference=form.reference.data
         )

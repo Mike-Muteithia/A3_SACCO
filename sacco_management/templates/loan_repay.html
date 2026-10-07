@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-md-5 mb-4">
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-dark text-white"><h5 class="mb-0">Loan Summary</h5></div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between"><span>Member:</span> <strong>{{ loan.member.full_name }}</strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span>Principal:</span> <strong>KES {{ "{:,.2f}".format(loan.principal) }}</strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span>Monthly Installment:</span> <strong>KES {{ "{:,.2f}".format(loan.monthly_installment) }}</strong></li>
+                <li class="list-group-item d-flex justify-content-between"><span>Total Payable:</span> <strong>KES {{ "{:,.2f}".format(loan.total_payable) }}</strong></li>
+                <li class="list-group-item d-flex justify-content-between text-success"><span>Total Repaid:</span> <strong>KES {{ "{:,.2f}".format(loan.total_repaid) }}</strong></li>
+                <li class="list-group-item d-flex justify-content-between text-danger fs-5"><span>Remaining Balance:</span> <strong>KES {{ "{:,.2f}".format(loan.remaining_balance) }}</strong></li>
+            </ul>
+        </div>
+        
+        {% if loan.status == 'Approved' %}
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white"><h6 class="mb-0">Record Repayment</h6></div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.amount.label(class="form-label") }}
+                        {{ form.amount(class="form-control", step="0.01") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.reference.label(class="form-label") }}
+                        {{ form.reference(class="form-control", placeholder="e.g. M-Pesa Code") }}
+                    </div>
+                    {{ form.submit(class="btn btn-primary w-100") }}
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white"><h5 class="mb-0">Repayment Ledger</h5></div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Reference</th>
+                            <th>Amount Paid</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in repayments %}
+                        <tr>
+                            <td>{{ r.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td><code>{{ r.reference or 'CASH' }}</code></td>
+                            <td class="text-success fw-bold">KES {{ "{:,.2f}".format(r.amount) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="text-center py-3">No payments recorded yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

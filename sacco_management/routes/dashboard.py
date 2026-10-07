@@ -11,7 +11,7 @@ dashboard_bp = Blueprint('dashboard', __name__)
 def index():
     total_members = Member.query.count()
     # Optimized Database Math (fixes the memory leak issue)
-    total_savings = db.session.query(func.sum(Deposit.amount)).scalar() or 0.0
+    total_savings = db.session.query(func.sum(Deposit.amount)).filter(Deposit.deposit_type == 'Savings').scalar() or 0.0
     
     approved_loans = Loan.query.filter_by(status='Approved').all()
     total_loans_disbursed = sum(l.principal for l in approved_loans)
