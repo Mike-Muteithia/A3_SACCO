@@ -28,14 +28,16 @@ def create_app():
     from routes.auth import auth_bp
     from routes.dashboard import dashboard_bp
     from routes.members import members_bp
-    from routes.deposits import deposits_bp
+    from routes.transactions import transactions_bp # Renamed from deposits
     from routes.loans import loans_bp
+    from routes.reports import reports_bp # New reports routing
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(members_bp)
-    app.register_blueprint(deposits_bp)
+    app.register_blueprint(transactions_bp)
     app.register_blueprint(loans_bp)
+    app.register_blueprint(reports_bp)
 
     with app.app_context():
         db.create_all()

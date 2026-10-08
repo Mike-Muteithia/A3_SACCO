@@ -1,12 +1,14 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required
 from models import db, Member
 from forms import MemberForm
+from utils import permission_required
 
 members_bp = Blueprint('members', __name__)
 
 @members_bp.route('/members', methods=['GET', 'POST'])
 @login_required
+@permission_required('PROFILE_READ')
 def index():
     form = MemberForm()
     
@@ -30,3 +32,15 @@ def index():
 
     member_list = Member.query.order_by(Member.id.desc()).all()
     return render_template('members.html', members=member_list, form=form)
+
+    pass
+
+@members_bp.route('/members/<int:member_id>/delete', methods=['POST'])
+@login_required
+@permission_required('PROFILE_DELETE')
+def delete(member_id):
+    member = Member.query.get_or_404(member_id)
+    db.session.delete(member)
+    db.session.commit()
+    flash('Member removed securely.', 'success')
+    return redirect(url_for('members.index'))

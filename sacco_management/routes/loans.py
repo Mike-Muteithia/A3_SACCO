@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from models import db, Loan, Member, LoanRepayment, AuditLog
 from forms import LoanForm, RepaymentForm
-from utils import role_required
+from utils import permission_required
 
 loans_bp = Blueprint('loans', __name__)
 
@@ -11,7 +11,6 @@ loans_bp = Blueprint('loans', __name__)
 def index():
     form = LoanForm()
     form.member_id.choices = [(m.id, f"{m.member_no} - {m.full_name}") for m in Member.query.all()]
-
     if form.validate_on_submit():
         member = Member.query.get(form.member_id.data)
         max_eligible = member.total_savings * 3
@@ -26,37 +25,31 @@ def index():
             db.session.commit()
             flash('Loan application submitted.', 'success')
             return redirect(url_for('loans.index'))
-
     loans = Loan.query.order_by(Loan.application_date.desc()).all()
     return render_template('loans.html', form=form, loans=loans)
 
-# Notice the RBAC decorator here! Only Admin or LoanOfficer can approve/reject
 @loans_bp.route('/loans/<int:loan_id>/<action>')
 @login_required
-@role_required('LoanOfficer')
+@permission_required('LOAN_APPROVE_STD') # RBAC: Replaces the old hardcoded @role_required
 def action(loan_id, action):
     loan = Loan.query.get_or_404(loan_id)
     if loan.status != 'Pending':
         flash('Action denied. Loan is already locked.', 'danger')
         return redirect(url_for('loans.index'))
-
     if action == 'approve':
         loan.status = 'Approved'
         flash(f'Loan #{loan.id} approved.', 'success')
     elif action == 'reject':
         loan.status = 'Rejected'
         flash(f'Loan #{loan.id} rejected.', 'warning')
-
     log = AuditLog(
         user_id=current_user.id,
         action=f"Marked Loan #{loan.id} as {loan.status}",
         ip_address=request.remote_addr
     )
     db.session.add(log)
-    
     db.session.commit()
     return redirect(url_for('loans.index'))
-
 
 @loans_bp.route('/loans/<int:loan_id>/repay', methods=['GET', 'POST'])
 @login_required

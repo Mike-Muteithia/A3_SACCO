@@ -4,13 +4,34 @@ from flask_login import UserMixin
 
 db = SQLAlchemy()
 
+# Normalized RBAC Mapping
+role_permissions = db.Table('role_permissions',
+    db.Column('role_id', db.Integer, db.ForeignKey('roles.id'), primary_key=True),
+    db.Column('permission_id', db.Integer, db.ForeignKey('permissions.id'), primary_key=True)
+)
+
+class Permission(db.Model):
+    __tablename__ = 'permissions'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    permissions = db.relationship('Permission', secondary=role_permissions, lazy='subquery')
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
-    role = db.Column(db.String(20), nullable=False, default='Teller') # Admin, LoanOfficer, Teller
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
+    role = db.relationship('Role')
+    member_id = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=True) # Links customer login to profile
 
+    def has_permission(self, perm_name):
+        return any(p.name == perm_name for p in self.role.permissions)
 
 class Member(db.Model):
     __tablename__ = 'members'
@@ -22,34 +43,24 @@ class Member(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=True)
     date_joined = db.Column(db.DateTime, default=datetime.utcnow)
     
-    deposits = db.relationship('Deposit', backref='member', lazy=True, cascade="all, delete-orphan")
+    transactions = db.relationship('FinancialTransaction', backref='member', lazy=True, cascade="all, delete-orphan")
     loans = db.relationship('Loan', backref='member', lazy=True, cascade="all, delete-orphan")
 
     @property
     def total_savings(self):
-        return sum(d.amount for d in self.deposits if d.deposit_type == 'Savings')
-        
-    @property
-    def total_share_capital(self):
-        return sum(d.amount for d in self.deposits if d.deposit_type == 'Share Capital')
+        deposits = sum(t.amount for t in self.transactions if t.transaction_type == 'Savings')
+        withdraws = sum(t.amount for t in self.transactions if t.transaction_type == 'Withdrawal')
+        return deposits - withdraws
 
     @property
     def active_loans_total(self):
         return sum(l.principal for l in self.loans if l.status == 'Approved')
 
-class Deposit(db.Model):
-    __tablename__ = 'deposits'
+class FinancialTransaction(db.Model):
+    __tablename__ = 'financial_transactions'
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=False)
-    deposit_type = db.Column(db.String(20), nullable=False, default='Savings') # Savings or Share Capital
-    amount = db.Column(db.Float, nullable=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
-    reference = db.Column(db.String(50), nullable=True)
-
-class LoanRepayment(db.Model):
-    __tablename__ = 'loan_repayments'
-    id = db.Column(db.Integer, primary_key=True)
-    loan_id = db.Column(db.Integer, db.ForeignKey('loans.id'), nullable=False)
+    transaction_type = db.Column(db.String(50), nullable=False) # Savings, Share Capital, Withdrawal
     amount = db.Column(db.Float, nullable=False)
     date = db.Column(db.DateTime, default=datetime.utcnow)
     reference = db.Column(db.String(50), nullable=True)
@@ -63,30 +74,24 @@ class Loan(db.Model):
     duration_months = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(20), default='Pending')
     application_date = db.Column(db.DateTime, default=datetime.utcnow)
-    
     repayments = db.relationship('LoanRepayment', backref='loan', lazy=True, cascade="all, delete-orphan")
 
     @property
-    def monthly_installment(self):
-        # Amortized reducing balance calculation
+    def remaining_balance(self):
         r = (self.interest_rate / 100) / 12
         n = self.duration_months
-        if r == 0:
-            return self.principal / n
-        return (self.principal * r * (1 + r)**n) / ((1 + r)**n - 1)
+        installment = self.principal / n if r == 0 else (self.principal * r * (1 + r)**n) / ((1 + r)**n - 1)
+        total_payable = installment * self.duration_months
+        total_repaid = sum(rep.amount for rep in self.repayments)
+        return total_payable - total_repaid
 
-    @property
-    def total_payable(self):
-        return self.monthly_installment * self.duration_months
-        
-    @property
-    def total_repaid(self):
-        return sum(r.amount for r in self.repayments)
-        
-    @property
-    def remaining_balance(self):
-        return self.total_payable - self.total_repaid
-
+class LoanRepayment(db.Model):
+    __tablename__ = 'loan_repayments'
+    id = db.Column(db.Integer, primary_key=True)
+    loan_id = db.Column(db.Integer, db.ForeignKey('loans.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    reference = db.Column(db.String(50), nullable=True)
 
 class AuditLog(db.Model):
     __tablename__ = 'audit_logs'
@@ -95,6 +100,4 @@ class AuditLog(db.Model):
     action = db.Column(db.String(255), nullable=False)
     ip_address = db.Column(db.String(50), nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # Relationship to know exactly which staff member performed the action
     user = db.relationship('User', backref='logs', lazy=True)

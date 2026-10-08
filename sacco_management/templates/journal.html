@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-journal-text me-2"></i>Consolidated Financial Ledger</h5>
+        <span class="badge bg-light text-dark">Manager / Admin View</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 text-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date (UTC)</th>
+                        <th>Transaction ID</th>
+                        <th>Member Name</th>
+                        <th>Transaction Type</th>
+                        <th>Amount (KES)</th>
+                        <th>Reference</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transactions %}
+                    <tr>
+                        <td>{{ t.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td><strong>#TX-{{ t.id }}</strong></td>
+                        <td>{{ t.member.full_name }}</td>
+                        <td><span class="badge {% if t.transaction_type == 'Withdrawal' %}bg-danger{% else %}bg-success{% endif %}">{{ t.transaction_type }}</span></td>
+                        <td class="fw-bold">KES {{ "{:,.2f}".format(t.amount) }}</td>
+                        <td><code>{{ t.reference or 'N/A' }}</code></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center py-4">No financial records found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

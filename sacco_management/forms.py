@@ -15,7 +15,7 @@ class MemberForm(FlaskForm):
     email = StringField('Email', validators=[Optional(), Email()])
     submit = SubmitField('Register Member')
 
-class DepositForm(FlaskForm):
+class TransactionForm(FlaskForm):
     member_id = SelectField('Select Member', coerce=int, validators=[DataRequired()])
     deposit_type = SelectField('Transaction Type', choices=[('Savings', 'Normal Savings'), ('Share Capital', 'Share Capital')], validators=[DataRequired()])
     amount = FloatField('Amount (KES)', validators=[DataRequired(), NumberRange(min=1)])

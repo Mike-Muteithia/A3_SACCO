@@ -3,7 +3,7 @@
 <div class="row">
     <div class="col-md-4 mb-4">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white"><h5 class="mb-0">Record Deposit</h5></div>
+            <div class="card-header bg-white"><h5 class="mb-0">Record Transaction</h5></div>
             <div class="card-body">
                 <form method="POST">
                     {{ form.hidden_tag() }}
@@ -12,8 +12,8 @@
                         {{ form.member_id(class="form-select") }}
                     </div>
                     <div class="mb-3">
-                        {{ form.deposit_type.label(class="form-label") }}
-                        {{ form.deposit_type(class="form-select") }}
+                        {{ form.transaction_type.label(class="form-label") }}
+                        {{ form.transaction_type(class="form-select") }}
                     </div>
                     <div class="mb-3">
                         {{ form.amount.label(class="form-label") }}
@@ -28,10 +28,9 @@
             </div>
         </div>
     </div>
-
     <div class="col-md-8">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-white"><h5 class="mb-0">Recent Deposit Transactions</h5></div>
+            <div class="card-header bg-white"><h5 class="mb-0">Recent Financial Transactions</h5></div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
@@ -45,16 +44,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for d in deposits %}
+                            {% for t in transactions %}
                             <tr>
-                                <td>{{ d.date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                <td>{{ d.member.full_name }} ({{ d.member.member_no }})</td>
-                                <td><code>{{ d.reference or 'CASH' }}</code></td>
-                                <td class="fw-bold text-success">KES {{ "{:,.2f}".format(d.amount) }}</td>
-                                <td><span class="badge bg-secondary">{{ d.deposit_type }}</span></td>
+                                <td>{{ t.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ t.member.full_name }} ({{ t.member.member_no }})</td>
+                                <td><code>{{ t.reference or 'CASH' }}</code></td>
+                                <td class="fw-bold {% if t.transaction_type == 'Withdrawal' %}text-danger{% else %}text-success{% endif %}">
+                                    KES {{ "{:,.2f}".format(t.amount) }}
+                                </td>
+                                <td><span class="badge bg-secondary">{{ t.transaction_type }}</span></td>
                             </tr>
                             {% else %}
-                            <tr><td colspan="4" class="text-center py-3">No deposits logged yet.</td></tr>
+                            <tr><td colspan="5" class="text-center py-3">No transactions logged yet.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
