@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4>Financial Statement: {{ member.full_name }} ({{ member.member_no }})</h4>
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h5>Transactions</h5>
+        <table class="table bg-white">
+            <tr><th>Date</th><th>Type</th><th>Amount</th></tr>
+            {% for t in member.transactions %}
+            <tr><td>{{ t.date.strftime('%Y-%m-%d') }}</td><td>{{ t.transaction_type }}</td><td>KES {{ "{:,.2f}".format(t.amount) }}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="col-md-6">
+        <h5>Loan History</h5>
+        <table class="table bg-white">
+            <tr><th>Status</th><th>Principal</th><th>Balance</th></tr>
+            {% for l in member.loans %}
+            <tr><td>{{ l.status }}</td><td>KES {{ "{:,.2f}".format(l.principal) }}</td><td>KES {{ "{:,.2f}".format(l.remaining_balance) }}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

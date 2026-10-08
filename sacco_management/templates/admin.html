@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card"><div class="card-header">Create User</div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-2">{{ form.username.label }} {{ form.username(class="form-control") }}</div>
+                    <div class="mb-2">{{ form.password.label }} {{ form.password(class="form-control") }}</div>
+                    <div class="mb-3">{{ form.role_id.label }} {{ form.role_id(class="form-select") }}</div>
+                    {{ form.submit(class="btn btn-warning w-100") }}
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <table class="table bg-white shadow-sm">
+            <thead><tr><th>ID</th><th>Username</th><th>Role</th><th>Action</th></tr></thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.id }}</td><td>{{ u.username }}</td><td>{{ u.role.name }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.delete_user', user_id=u.id) }}" style="display:inline;">
+                            <button class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

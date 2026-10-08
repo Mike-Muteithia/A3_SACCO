@@ -32,3 +32,9 @@ class LoanForm(FlaskForm):
     principal = FloatField('Requested Principal (KES)', validators=[DataRequired(), NumberRange(min=100)])
     duration_months = SelectField('Repayment Period', choices=[('6', '6 Months'), ('12', '12 Months'), ('24', '24 Months'), ('36', '36 Months')], validators=[DataRequired()])
     submit = SubmitField('Submit Application')
+
+class UserForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    role_id = SelectField('Role', coerce=int, validators=[DataRequired()])
+    submit = SubmitField('Create User')

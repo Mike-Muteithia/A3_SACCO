@@ -31,6 +31,7 @@ def create_app():
     from routes.transactions import transactions_bp # Renamed from deposits
     from routes.loans import loans_bp
     from routes.reports import reports_bp # New reports routing
+    from routes.admin import admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -38,6 +39,8 @@ def create_app():
     app.register_blueprint(transactions_bp)
     app.register_blueprint(loans_bp)
     app.register_blueprint(reports_bp)
+    app.register_blueprint(admin_bp)
+    
 
     with app.app_context():
         db.create_all()

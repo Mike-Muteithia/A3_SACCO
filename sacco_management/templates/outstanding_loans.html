@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-danger text-white"><h5>Aggregate Outstanding Portfolio: KES {{ "{:,.2f}".format(par) }}</h5></div>
+    <table class="table table-hover">
+        <thead><tr><th>Member</th><th>Principal</th><th>Remaining Balance</th><th>Action</th></tr></thead>
+        <tbody>
+            {% for l in loans %}
+            <tr>
+                <td>{{ l.member.full_name }}</td><td>KES {{ "{:,.2f}".format(l.principal) }}</td>
+                <td class="fw-bold text-danger">KES {{ "{:,.2f}".format(l.remaining_balance) }}</td>
+                <td><a href="{{ url_for('reports.member_statement', member_id=l.member_id) }}" class="btn btn-sm btn-outline-info">View Statement</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
