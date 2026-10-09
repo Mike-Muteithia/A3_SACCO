@@ -14,8 +14,8 @@ def index():
     total_members = Member.query.count()
     
     # Calculate Total Pool: Sum of Savings Deposits minus Withdrawals
-    deposits = db.session.query(func.sum(FinancialTransaction.amount)).filter(FinancialTransaction.transaction_type == 'Savings').scalar() or 0.0
-    withdrawals = db.session.query(func.sum(FinancialTransaction.amount)).filter(FinancialTransaction.transaction_type == 'Withdrawal').scalar() or 0.0
+    deposits = db.session.query(func.sum(FinancialTransaction.amount)).filter(FinancialTransaction.transaction_type == 'Savings').scalar() or 0
+    withdrawals = db.session.query(func.sum(FinancialTransaction.amount)).filter(FinancialTransaction.transaction_type == 'Withdrawal').scalar() or 0
     total_savings = deposits - withdrawals
     
     approved_loans = Loan.query.filter_by(status='Approved').all()
