@@ -26,7 +26,7 @@ def seed_database():
             'Teller': Role(name='Teller', permissions=[perms['PROFILE_READ'], perms['TX_CREATE']]),
             'LoanOfficer': Role(name='LoanOfficer', permissions=[perms['PROFILE_READ'], perms['LOAN_APPROVE_STD']]),
             'Manager': Role(name='Manager', permissions=[perms['PROFILE_READ'], perms['LOAN_APPROVE_STD'], perms['LOAN_APPROVE_LARGE'], perms['REPORT_READ_ALL']]),
-            'SystemAdmin': Role(name='SystemAdmin', permissions=[perms['SYSTEM_CONFIG'], perms['PROFILE_DELETE'], perms['USER_MANAGE']])
+            'SystemAdmin': Role(name='SystemAdmin', permissions=[perms['SYSTEM_CONFIG'], perms['PROFILE_DELETE'], perms['USER_MANAGE'], perms['PROFILE_READ']])
         }
         db.session.add_all(roles.values())
         db.session.commit()

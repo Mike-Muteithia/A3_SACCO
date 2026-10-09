@@ -17,7 +17,7 @@ class MemberForm(FlaskForm):
 
 class TransactionForm(FlaskForm):
     member_id = SelectField('Select Member', coerce=int, validators=[DataRequired()])
-    deposit_type = SelectField('Transaction Type', choices=[('Savings', 'Normal Savings'), ('Share Capital', 'Share Capital')], validators=[DataRequired()])
+    transaction_type = SelectField('Transaction Type', choices=[('Savings', 'Normal Savings'), ('Withdrawal', 'Withdrawal'), ('Share Capital', 'Share Capital')], validators=[DataRequired()])
     amount = FloatField('Amount (KES)', validators=[DataRequired(), NumberRange(min=1)])
     reference = StringField('Payment Reference')
     submit = SubmitField('Submit Transaction')

@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from sqlalchemy import func
 
 db = SQLAlchemy()
 
@@ -42,6 +43,7 @@ class Member(db.Model):
     phone = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=True)
     date_joined = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
     
     transactions = db.relationship('FinancialTransaction', backref='member', lazy=True, cascade="all, delete-orphan")
     loans = db.relationship('Loan', backref='member', lazy=True, cascade="all, delete-orphan")
@@ -55,6 +57,16 @@ class Member(db.Model):
     @property
     def active_loans_total(self):
         return sum(l.principal for l in self.loans if l.status == 'Approved')
+
+    @property
+    def total_savings(self):
+        deposits = db.session.query(func.coalesce(func.sum(FinancialTransaction.amount), 0)).filter_by(member_id=self.id, transaction_type='Savings').scalar()
+        withdraws = db.session.query(func.coalesce(func.sum(FinancialTransaction.amount), 0)).filter_by(member_id=self.id, transaction_type='Withdrawal').scalar()
+        return deposits - withdraws
+
+    @property
+    def active_loans_total(self):
+        return db.session.query(func.coalesce(func.sum(Loan.principal), 0)).filter_by(member_id=self.id, status='Approved').scalar()
 
 class FinancialTransaction(db.Model):
     __tablename__ = 'financial_transactions'
@@ -82,7 +94,10 @@ class Loan(db.Model):
         n = self.duration_months
         installment = self.principal / n if r == 0 else (self.principal * r * (1 + r)**n) / ((1 + r)**n - 1)
         total_payable = installment * self.duration_months
-        total_repaid = sum(rep.amount for rep in self.repayments)
+        
+        # Calculate total repaid via SQL
+        total_repaid = db.session.query(func.coalesce(func.sum(LoanRepayment.amount), 0)).filter_by(loan_id=self.id).scalar()
+        
         return total_payable - total_repaid
 
 class LoanRepayment(db.Model):

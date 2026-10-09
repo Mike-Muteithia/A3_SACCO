@@ -11,11 +11,12 @@ transactions_bp = Blueprint('transactions', __name__)
 @permission_required('TX_CREATE') # Teller Permission
 def index():
     form = TransactionForm()
-    # Populate the dropdown dynamically from the database
-    form.member_id.choices = [(m.id, f"{m.member_no} - {m.full_name}") for m in Member.query.order_by(Member.full_name).all()]
+    # Populate the dropdown dynamically (Active members only)
+    form.member_id.choices = [(m.id, f"{m.member_no} - {m.full_name}") for m in Member.query.filter_by(is_active=True).order_by(Member.full_name).all()]
     
     if form.validate_on_submit():
-        member = Member.query.get(form.member_id.data)
+        # Lock the member row until this transaction commits/rolls back
+        member = Member.query.with_for_update().get(form.member_id.data)
         
         # Prevent overdrafts on withdrawals
         if form.transaction_type.data == 'Withdrawal' and form.amount.data > member.total_savings:

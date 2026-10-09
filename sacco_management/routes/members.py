@@ -24,9 +24,12 @@ def index():
         return redirect(url_for('members.index'))
         
     if search_query:
-        members = Member.query.filter(Member.full_name.ilike(f'%{search_query}%') | Member.member_no.ilike(f'%{search_query}%')).all()
+        members = Member.query.filter(
+            Member.is_active == True,
+            (Member.full_name.ilike(f'%{search_query}%') | Member.member_no.ilike(f'%{search_query}%'))
+        ).all()
     else:
-        members = Member.query.order_by(Member.id.desc()).all()
+        members = Member.query.filter_by(is_active=True).order_by(Member.id.desc()).all()
         
     return render_template('members.html', members=members, form=form, search_query=search_query)
 
@@ -46,7 +49,9 @@ def update(member_id):
 @permission_required('PROFILE_DELETE')
 def delete(member_id):
     member = Member.query.get_or_404(member_id)
-    db.session.delete(member)
+    # db.session.delete(member)
+    member.is_active = False
+
     db.session.commit()
-    flash('Member removed securely.', 'success')
+    flash('Member account archived securely. Financial records preserved.', 'success')
     return redirect(url_for('members.index'))
