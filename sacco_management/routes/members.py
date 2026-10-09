@@ -19,8 +19,14 @@ def index():
             national_id=form.national_id.data, phone=form.phone.data, email=form.email.data
         )
         db.session.add(new_member)
-        db.session.commit()
-        flash('Member registered!', 'success')
+
+        try:
+            db.session.commit()
+            flash('Member registered!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('A database error occurred while registering the member.', 'danger')
+            
         return redirect(url_for('members.index'))
         
     if search_query:
@@ -40,8 +46,14 @@ def update(member_id):
     member = Member.query.get_or_404(member_id)
     member.phone = request.form.get('phone')
     member.email = request.form.get('email')
-    db.session.commit()
-    flash('Member contact info updated.', 'info')
+
+    try:
+        db.session.commit()
+        flash('Member contact info updated.', 'info')
+    except Exception as e:
+        db.session.rollback()
+        flash('A database error occurred while updating the member.', 'danger')
+        
     return redirect(url_for('members.index'))
 
 @members_bp.route('/members/<int:member_id>/delete', methods=['POST'])
@@ -52,6 +64,11 @@ def delete(member_id):
     # db.session.delete(member)
     member.is_active = False
 
-    db.session.commit()
-    flash('Member account archived securely. Financial records preserved.', 'success')
+    try:
+        db.session.commit()
+        flash('Member account archived securely. Financial records preserved.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('A database error occurred while archiving the member.', 'danger')
+        
     return redirect(url_for('members.index'))

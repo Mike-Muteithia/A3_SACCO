@@ -18,8 +18,14 @@ def manage_users():
         hashed_pw = generate_password_hash(form.password.data)
         new_user = User(username=form.username.data, password_hash=hashed_pw, role_id=form.role_id.data)
         db.session.add(new_user)
-        db.session.commit()
-        flash(f'User {new_user.username} created.', 'success')
+
+        try:
+            db.session.commit()
+            flash(f'User {new_user.username} created.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('A database error occurred while creating the user account.', 'danger')
+            
         return redirect(url_for('admin.manage_users'))
         
     users = User.query.all()
@@ -31,6 +37,12 @@ def manage_users():
 def delete_user(user_id):
     user = User.query.get_or_404(user_id)
     db.session.delete(user)
-    db.session.commit()
-    flash('User account deleted.', 'success')
+
+    try:
+        db.session.commit()
+        flash('User account deleted.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('A database error occurred while deleting the user.', 'danger')
+        
     return redirect(url_for('admin.manage_users'))

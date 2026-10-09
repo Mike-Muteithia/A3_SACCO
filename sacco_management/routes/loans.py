@@ -29,8 +29,14 @@ def index():
         else:
             loan = Loan(member_id=member.id, principal=form.principal.data, duration_months=int(form.duration_months.data))
             db.session.add(loan)
-            db.session.commit()
-            flash('Loan application submitted.', 'success')
+
+            try:
+                db.session.commit()
+                flash('Loan application submitted.', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash('A database error occurred while submitting the application.', 'danger')
+                
             return redirect(url_for('loans.index'))
             
     return render_template('loans.html', form=form, loans=loans)
@@ -62,7 +68,13 @@ def action(loan_id, action):
         flash(f'Loan #{loan.id} rejected.', 'warning')
         
     db.session.add(AuditLog(user_id=current_user.id, action=f"Marked Loan #{loan.id} as {loan.status}", ip_address=request.remote_addr))
-    db.session.commit()
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash('A database error occurred while updating the loan status.', 'danger')
+        
     return redirect(url_for('loans.index'))
 
 @loans_bp.route('/loans/<int:loan_id>/repay', methods=['GET', 'POST'])
@@ -74,10 +86,18 @@ def repay(loan_id):
     if form.validate_on_submit():
         repayment = LoanRepayment(loan_id=loan.id, amount=form.amount.data, reference=form.reference.data)
         db.session.add(repayment)
-        if (loan.remaining_balance - form.amount.data) <= 0.01:
+
+        if (float(loan.remaining_balance) - float(form.amount.data)) <= 0.01:
             loan.status = 'Settled'
-        db.session.commit()
-        flash('Repayment recorded.', 'success')
+            
+        try:
+            db.session.commit()
+            flash('Repayment recorded.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('A database error occurred while recording the repayment.', 'danger')
+            
         return redirect(url_for('loans.repay', loan_id=loan.id))
+    
     repayments = LoanRepayment.query.filter_by(loan_id=loan.id).order_by(LoanRepayment.date.desc()).all()
     return render_template('loan_repay.html', loan=loan, form=form, repayments=repayments)

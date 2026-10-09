@@ -38,9 +38,13 @@ def index():
             ip_address=request.remote_addr
         )
         db.session.add(log)
-        db.session.commit()
-        
-        flash('Transaction recorded successfully.', 'success')
+        try:
+            db.session.commit()
+            flash('Transaction recorded successfully.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('A database error occurred. Transaction rolled back.', 'danger')
+            
         return redirect(url_for('transactions.index'))
         
     transactions = FinancialTransaction.query.order_by(FinancialTransaction.date.desc()).limit(50).all()

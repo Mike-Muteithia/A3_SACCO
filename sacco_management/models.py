@@ -48,15 +48,6 @@ class Member(db.Model):
     transactions = db.relationship('FinancialTransaction', backref='member', lazy=True, cascade="all, delete-orphan")
     loans = db.relationship('Loan', backref='member', lazy=True, cascade="all, delete-orphan")
 
-    @property
-    def total_savings(self):
-        deposits = sum(t.amount for t in self.transactions if t.transaction_type == 'Savings')
-        withdraws = sum(t.amount for t in self.transactions if t.transaction_type == 'Withdrawal')
-        return deposits - withdraws
-
-    @property
-    def active_loans_total(self):
-        return sum(l.principal for l in self.loans if l.status == 'Approved')
 
     @property
     def total_savings(self):
@@ -73,7 +64,7 @@ class FinancialTransaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=False)
     transaction_type = db.Column(db.String(50), nullable=False) # Savings, Share Capital, Withdrawal
-    amount = db.Column(db.Float, nullable=False)
+    amount = db.Column(db.Numeric(12, 2), nullable=False)
     date = db.Column(db.DateTime, default=datetime.utcnow)
     reference = db.Column(db.String(50), nullable=True)
 
@@ -81,30 +72,37 @@ class Loan(db.Model):
     __tablename__ = 'loans'
     id = db.Column(db.Integer, primary_key=True)
     member_id = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=False)
-    principal = db.Column(db.Float, nullable=False)
-    interest_rate = db.Column(db.Float, default=12.0)
+    principal = db.Column(db.Numeric(12, 2), nullable=False)
+    interest_rate = db.Column(db.Numeric(5, 2), default=12.0)
     duration_months = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(20), default='Pending')
     application_date = db.Column(db.DateTime, default=datetime.utcnow)
     repayments = db.relationship('LoanRepayment', backref='loan', lazy=True, cascade="all, delete-orphan")
 
     @property
-    def remaining_balance(self):
-        r = (self.interest_rate / 100) / 12
+    def monthly_installment(self):
+        r = (float(self.interest_rate) / 100) / 12
         n = self.duration_months
-        installment = self.principal / n if r == 0 else (self.principal * r * (1 + r)**n) / ((1 + r)**n - 1)
-        total_payable = installment * self.duration_months
+        p = float(self.principal)
+        return p / n if r == 0 else (p * r * (1 + r)**n) / ((1 + r)**n - 1)
+
+    @property
+    def total_payable(self):
+        return self.monthly_installment * self.duration_months
         
-        # Calculate total repaid via SQL
-        total_repaid = db.session.query(func.coalesce(func.sum(LoanRepayment.amount), 0)).filter_by(loan_id=self.id).scalar()
-        
-        return total_payable - total_repaid
+    @property
+    def total_repaid(self):
+        return float(db.session.query(func.coalesce(func.sum(LoanRepayment.amount), 0)).filter_by(loan_id=self.id).scalar())
+
+    @property
+    def remaining_balance(self):
+        return self.total_payable - self.total_repaid
 
 class LoanRepayment(db.Model):
     __tablename__ = 'loan_repayments'
     id = db.Column(db.Integer, primary_key=True)
     loan_id = db.Column(db.Integer, db.ForeignKey('loans.id'), nullable=False)
-    amount = db.Column(db.Float, nullable=False)
+    amount = db.Column(db.Numeric(12, 2), nullable=False)
     date = db.Column(db.DateTime, default=datetime.utcnow)
     reference = db.Column(db.String(50), nullable=True)
 
