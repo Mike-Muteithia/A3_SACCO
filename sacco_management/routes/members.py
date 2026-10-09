@@ -33,9 +33,10 @@ def index():
         members = Member.query.filter(
             Member.is_active == True,
             (Member.full_name.ilike(f'%{search_query}%') | Member.member_no.ilike(f'%{search_query}%'))
-        ).all()
+        ).paginate(page=request.args.get('page', 1, type=int), per_page=20)
     else:
-        members = Member.query.filter_by(is_active=True).order_by(Member.id.desc()).all()
+        # If this still says .all(), it will pass a list instead of a Pagination object
+        members = Member.query.filter_by(is_active=True).order_by(Member.id.desc()).paginate(page=request.args.get('page', 1, type=int), per_page=20)
         
     return render_template('members.html', members=members, form=form, search_query=search_query)
 
