@@ -87,7 +87,7 @@ def repay(loan_id):
         repayment = LoanRepayment(loan_id=loan.id, amount=form.amount.data, reference=form.reference.data)
         db.session.add(repayment)
 
-        if (float(loan.remaining_balance) - float(form.amount.data)) <= 0.01:
+        if loan.remaining_balance <= 0.01:
             loan.status = 'Settled'
             
         try:
