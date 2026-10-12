@@ -38,3 +38,7 @@ class UserForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     role_id = SelectField('Role', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Create User')
+
+class ActionForm(FlaskForm):
+    # Used strictly to generate and validate CSRF tokens on list views
+    pass

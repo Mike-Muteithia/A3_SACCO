@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -21,6 +22,8 @@ def create_app():
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', os.urandom(24).hex())
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     db.init_app(app)
     migrate = Migrate(app, db)

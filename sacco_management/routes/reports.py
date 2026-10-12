@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
 from models import FinancialTransaction, Member, Loan
 from utils import permission_required
@@ -9,7 +9,9 @@ reports_bp = Blueprint('reports', __name__)
 @login_required
 @permission_required('REPORT_READ_ALL') # RBAC: Manager / SystemAdmin
 def consolidated_journal():
-    transactions = FinancialTransaction.query.order_by(FinancialTransaction.date.desc()).limit(500).all()
+    page = request.args.get('page', 1, type=int)
+    # Fetch data in chunks of 50
+    transactions = FinancialTransaction.query.order_by(FinancialTransaction.date.desc()).paginate(page=page, per_page=50)
     return render_template('journal.html', transactions=transactions)
 
 @reports_bp.route('/reports/statement/<int:member_id>')

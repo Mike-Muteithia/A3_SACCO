@@ -1,4 +1,13 @@
-venv/
+# Virtual environment
+.venv/
+
+# VS Code settings
+.vscode/
+
+# Python cache
 __pycache__/
 *.pyc
+
+# Database files
 *.db
+*.sqlite3

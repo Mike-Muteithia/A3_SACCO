@@ -19,7 +19,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for t in transactions %}
+                    {% for t in transactions.items %}
                     <tr>
                         <td>{{ t.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                         <td><strong>#TX-{{ t.id }}</strong></td>

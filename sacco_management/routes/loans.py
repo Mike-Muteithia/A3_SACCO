@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from models import db, Loan, Member, LoanRepayment, AuditLog
-from forms import LoanForm, RepaymentForm
+from forms import LoanForm, RepaymentForm, ActionForm
 
 loans_bp = Blueprint('loans', __name__)
 
@@ -9,6 +9,7 @@ loans_bp = Blueprint('loans', __name__)
 @login_required
 def index():
     form = LoanForm()
+    action_form = ActionForm() # Instantiate the CSRF form
     
     # RBAC: Members only see themselves; Staff see everyone
     if current_user.role.name == 'Member':
@@ -19,7 +20,7 @@ def index():
         loans = Loan.query.order_by(Loan.application_date.desc()).all()
 
     if form.validate_on_submit():
-        member = Member.query.get(form.member_id.data)
+        member = Member.query.with_for_update().get(form.member_id.data)
         max_eligible = member.total_savings * 3
         
         if member.total_savings <= 0:
@@ -39,9 +40,9 @@ def index():
                 
             return redirect(url_for('loans.index'))
             
-    return render_template('loans.html', form=form, loans=loans)
+    return render_template('loans.html', form=form, action_form=action_form, loans=loans)
 
-@loans_bp.route('/loans/<int:loan_id>/<action>')
+@loans_bp.route('/loans/<int:loan_id>/<action>', methods=['POST'])
 @login_required
 def action(loan_id, action):
     loan = Loan.query.get_or_404(loan_id)

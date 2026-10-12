@@ -57,8 +57,14 @@
                                 </td>
                                 <td>
                                     {% if l.status == 'Pending' %}
-                                    <a href="{{ url_for('loans.action', loan_id=l.id, action='approve') }}" class="btn btn-sm btn-success">Approve</a>
-                                    <a href="{{ url_for('loans.action', loan_id=l.id, action='reject') }}" class="btn btn-sm btn-outline-danger">Reject</a>
+                                    <form method="POST" action="{{ url_for('loans.action', loan_id=l.id, action='approve') }}" class="d-inline">
+                                        {{ action_form.hidden_tag() }}
+                                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('loans.action', loan_id=l.id, action='reject') }}" class="d-inline">
+                                        {{ action_form.hidden_tag() }}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                    </form>
                                     {% elif l.status == 'Approved' %}
                                     <a href="{{ url_for('loans.repay', loan_id=l.id) }}" class="btn btn-sm btn-outline-primary">Manage/Repay</a>
                                     {% else %}

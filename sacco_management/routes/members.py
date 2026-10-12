@@ -42,8 +42,16 @@ def index():
 
 @members_bp.route('/members/<int:member_id>/update', methods=['POST'])
 @login_required
-@permission_required('PROFILE_READ') # In a real app, use PROFILE_UPDATE. Reusing READ for brevity.
 def update(member_id):
+    # Prevent IDOR: Ensure users only edit themselves, or possess Admin privileges
+    if current_user.role.name == 'Member' and current_user.member_id != member_id:
+        flash('Access Denied: You cannot modify another member\'s profile.', 'danger')
+        return redirect(url_for('members.index'))
+        
+    if current_user.role.name != 'Member' and not current_user.has_permission('USER_MANAGE'):
+        flash('Access Denied: Insufficient privileges to update profiles.', 'danger')
+        return redirect(url_for('members.index'))
+
     member = Member.query.get_or_404(member_id)
     member.phone = request.form.get('phone')
     member.email = request.form.get('email')
