@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Akiba Sacco Core Banking & Financial Management Portal">
     <title>{% block title %}Portal{% endblock %} - Akiba Sacco Core</title>
-
+    
     <!-- Google Fonts & Bootstrap 5.3.3 CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Restored Bootstrap Icons CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- DataTables CSS for Interactive Tables -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     
     <!-- Custom Financial Theme -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -27,9 +28,7 @@
 <nav aria-label="Page navigation" class="mt-3">
     <ul class="pagination pagination-sm justify-content-end mb-0">
         <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-            <a class="page-link" href="{% if pagination.has_prev %}{{ url_for(endpoint, page=pagination.prev_num, **kwargs) }}{% else %}#{% endif %}">
-                <i class="bi bi-chevron-left"></i>
-            </a>
+            <a class="page-link" href="{% if pagination.has_prev %}{{ url_for(endpoint, page=pagination.prev_num, **kwargs) }}{% else %}#{% endif %}"><i class="bi bi-chevron-left"></i></a>
         </li>
         {% for page in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
             {% if page %}
@@ -41,9 +40,7 @@
             {% endif %}
         {% endfor %}
         <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-            <a class="page-link" href="{% if pagination.has_next %}{{ url_for(endpoint, page=pagination.next_num, **kwargs) }}{% else %}#{% endif %}">
-                <i class="bi bi-chevron-right"></i>
-            </a>
+            <a class="page-link" href="{% if pagination.has_next %}{{ url_for(endpoint, page=pagination.next_num, **kwargs) }}{% else %}#{% endif %}"><i class="bi bi-chevron-right"></i></a>
         </li>
     </ul>
 </nav>
@@ -65,7 +62,6 @@
             <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
-
             {% if current_user.role.name != 'Member' %}
             <a href="{{ url_for('members.index') }}" class="nav-link {% if 'members' in request.endpoint %}active{% endif %}">
                 <i class="bi bi-people"></i> Members Directory
@@ -74,11 +70,9 @@
                 <i class="bi bi-arrow-left-right"></i> Transactions / Cashier
             </a>
             {% endif %}
-
             <a href="{{ url_for('loans.index') }}" class="nav-link {% if 'loans' in request.endpoint %}active{% endif %}">
                 <i class="bi bi-cash-stack"></i> Credit & Loans
             </a>
-
             {% if current_user.has_permission('REPORT_READ_ALL') %}
             <div class="nav-section-title mt-2">Financial Auditing</div>
             <a href="{{ url_for('reports.consolidated_journal') }}" class="nav-link {% if request.endpoint == 'reports.consolidated_journal' %}active{% endif %}">
@@ -88,18 +82,13 @@
                 <i class="bi bi-pie-chart"></i> Portfolio at Risk (PAR)
             </a>
             {% endif %}
-
             {% if current_user.has_permission('USER_MANAGE') or current_user.has_permission('SYSTEM_CONFIG') %}
             <div class="nav-section-title mt-2">Governance & SecOps</div>
             {% if current_user.has_permission('USER_MANAGE') %}
-            <a href="{{ url_for('admin.manage_users') }}" class="nav-link {% if 'admin' in request.endpoint %}active{% endif %}">
-                <i class="bi bi-shield-lock"></i> RBAC Management
-            </a>
+            <a href="{{ url_for('admin.manage_users') }}" class="nav-link {% if 'admin' in request.endpoint %}active{% endif %}"><i class="bi bi-shield-lock"></i> RBAC Management</a>
             {% endif %}
             {% if current_user.has_permission('SYSTEM_CONFIG') %}
-            <a href="{{ url_for('dashboard.system_logs') }}" class="nav-link {% if request.endpoint == 'dashboard.system_logs' %}active{% endif %}">
-                <i class="bi bi-file-earmark-text"></i> Audit Trails
-            </a>
+            <a href="{{ url_for('dashboard.system_logs') }}" class="nav-link {% if request.endpoint == 'dashboard.system_logs' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Audit Trails</a>
             {% endif %}
             {% endif %}
         </div>
@@ -135,16 +124,12 @@
         {% if current_user.is_authenticated %}
         <header class="topbar">
             <div class="d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
-                    <i class="bi bi-list fs-5"></i>
-                </button>
+                <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar"><i class="bi bi-list fs-5"></i></button>
                 <h5 class="mb-0 fw-bold text-secondary">{% block header_title %}Overview{% endblock %}</h5>
             </div>
             <div class="d-flex align-items-center gap-3">
                 <div class="user-profile-chip">
-                    <div class="user-avatar-circle">
-                        {{ current_user.username[:1]|upper }}
-                    </div>
+                    <div class="user-avatar-circle">{{ current_user.username[:1]|upper }}</div>
                     <div class="d-none d-sm-block text-start">
                         <div class="fw-bold small lh-1">{{ current_user.username }}</div>
                         <span class="badge-role {{ current_user.role.name }}">{{ current_user.role.name }}</span>
@@ -155,7 +140,6 @@
         {% endif %}
 
         <div class="p-3 p-md-4">
-            <!-- Flash Notification Messaging -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, msg in messages %}
@@ -171,16 +155,13 @@
                 {% endif %}
             {% endwith %}
 
-            <!-- Error Handler Block (if rendering an error response) -->
             {% if error_code %}
             <div class="card card-financial text-center py-5">
                 <div class="card-body">
                     <h1 class="display-3 fw-bold text-danger">{{ error_code }}</h1>
                     <h4 class="fw-bold text-dark">{{ error_title }}</h4>
                     <p class="text-secondary max-w-lg mx-auto">{{ error_msg }}</p>
-                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary-akiba mt-3">
-                        <i class="bi bi-house-door me-1"></i> Return to Safe Dashboard
-                    </a>
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary-akiba mt-3"><i class="bi bi-house-door me-1"></i> Return to Safe Dashboard</a>
                 </div>
             </div>
             {% else %}
@@ -190,7 +171,7 @@
     </main>
 </div>
 
-<!-- Modal Confirmation Component (Replaces native window.confirm) -->
+<!-- Modal Confirmation Component -->
 <div class="modal fade" id="akibaConfirmModal" tabindex="-1" aria-labelledby="akibaConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -209,11 +190,14 @@
     </div>
 </div>
 
-<!-- Bootstrap 5 Bundle JS -->
+<!-- Core JS Dependencies -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    // Universal Event Delegation for Secure Confirmation Dialogues
     document.addEventListener('DOMContentLoaded', () => {
         let activeTargetForm = null;
         const modalElement = document.getElementById('akibaConfirmModal');
@@ -233,9 +217,7 @@
 
         if (submitBtn) {
             submitBtn.addEventListener('click', () => {
-                if (activeTargetForm) {
-                    activeTargetForm.submit();
-                }
+                if (activeTargetForm) activeTargetForm.submit();
             });
         }
     });

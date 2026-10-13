@@ -1,0 +1,13 @@
+{% macro render_field(field, css_class="form-control", placeholder="") %}
+    {{ field.label(class="form-label fw-semibold text-secondary small mb-1") }}
+    {% if field.errors %}
+        {{ field(class=css_class + " is-invalid", placeholder=placeholder) }}
+        <div class="invalid-feedback d-block fw-bold">
+            {% for error in field.errors %}
+                <i class="bi bi-exclamation-circle me-1"></i>{{ error }}<br>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ field(class=css_class, placeholder=placeholder) }}
+    {% endif %}
+{% endmacro %}
