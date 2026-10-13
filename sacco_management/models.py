@@ -3,7 +3,7 @@ Akiba Sacco Management System - Data Models
 Financial domain models utilizing Decimal precision and pessimistic database locking.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any
 from flask_sqlalchemy import SQLAlchemy
@@ -84,7 +84,7 @@ class Member(db.Model):
     national_id = db.Column(db.String(20), unique=True, nullable=False, index=True)
     phone = db.Column(db.String(20), nullable=False, index=True)
     email = db.Column(db.String(100), unique=True, nullable=True)
-    date_joined = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    date_joined = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
     transactions = db.relationship('FinancialTransaction', backref='member', lazy=True, cascade="all, delete-orphan")
@@ -129,7 +129,7 @@ class FinancialTransaction(db.Model):
     member_id = db.Column(db.Integer, db.ForeignKey('members.id'), nullable=False, index=True)
     transaction_type = db.Column(db.String(50), nullable=False)  # Savings, Share Capital, Withdrawal
     amount = db.Column(db.Numeric(14, 2), nullable=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     reference = db.Column(db.String(50), nullable=True, index=True)
 
 
@@ -142,7 +142,7 @@ class Loan(db.Model):
     interest_rate = db.Column(db.Numeric(5, 2), default=Decimal('12.00'), nullable=False)  # Annual Rate %
     duration_months = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(20), default='Pending', nullable=False, index=True)  # Pending, Approved, Rejected, Settled
-    application_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    application_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     repayments = db.relationship('LoanRepayment', backref='loan', lazy=True, cascade="all, delete-orphan")
 
@@ -200,7 +200,7 @@ class LoanRepayment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     loan_id = db.Column(db.Integer, db.ForeignKey('loans.id'), nullable=False, index=True)
     amount = db.Column(db.Numeric(14, 2), nullable=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     reference = db.Column(db.String(50), nullable=True)
 
 
@@ -211,6 +211,6 @@ class AuditLog(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
     action = db.Column(db.String(255), nullable=False)
     ip_address = db.Column(db.String(50), nullable=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
     user = db.relationship('User', backref='logs', lazy=True)
