@@ -123,3 +123,19 @@ The frontend implements a custom financial theme tailored for a Kenyan banking i
 8. **Production Service (Daemon):**
   ```bash
   sudo systemctl enable --now akiba_sacco
+
+---
+
+## 7. UI/UX Upgrades
+The Jinja2 frontend has been enhanced with modern interactivity while maintaining its lightweight Server-Side Rendered (SSR) footprint:
+- **Interactive DataTables:** The member directory uses DataTables.js for instant client-side column sorting without triggering a page reload.
+- **Form Ergonomics:** A custom Jinja2 macro (`_macros.html`) intercepts Flask-WTF validation failures (e.g., regex mismatch on National IDs) and dynamically renders native Bootstrap `is-invalid` classes with inline red warnings.
+- **Capital Visualization:** The Executive Dashboard integrates Chart.js to render a responsive doughnut chart, visualizing the ratio of the Unencumbered Savings Pool against the Active Loan Portfolio.
+
+---
+
+## 8. DevSecOps & Production Deployment
+The environment transitions from a local Flask development server to a highly available, self-healing architecture:
+- **Systemd Daemonization:** Gunicorn runs as a dedicated Linux background service (`akiba_sacco.service`), ensuring automatic startup on boot and instant process recovery upon failure.
+- **Nginx Reverse Proxy:** Nginx intercepts public traffic on port 80, serves `static/style.css` instantaneously from memory, and proxies dynamic requests to Gunicorn on port 8000 while enforcing `X-Frame-Options` and `X-XSS-Protection` headers.
+- **Automated Disaster Recovery (Cron):** A scheduled bash script (`backup_db.sh`) runs via `cron` at 2:00 AM daily. It safely duplicates the active SQLite database, applies gzip compression to minimize disk footprint, and autonomously deletes archives older than 30 days to prevent storage exhaustion.
