@@ -17,12 +17,15 @@ def consolidated_journal():
 @reports_bp.route('/reports/statement/<int:member_id>')
 @login_required
 def member_statement(member_id):
-    # RBAC: Members can only view their own statement
-    if current_user.role.name == 'Member' and current_user.member_id != member_id:
-        flash('Access Denied: You can only view your own financial statements.', 'danger')
+    # Enforce Segregation of Duties: Customers access ONLY their ID; Staff MUST possess REPORT_READ_ALL
+    if current_user.role.name == 'Member':
+        if current_user.member_id != member_id:
+            flash('Access Denied: Insecure Object Reference blocked.', 'danger')
+            return redirect(url_for('dashboard.index'))
+    elif not current_user.has_permission('REPORT_READ_ALL'):
+        flash('Access Denied: Missing REPORT_READ_ALL authorization.', 'danger')
         return redirect(url_for('dashboard.index'))
-        
-    member = Member.query.get_or_404(member_id)
+    member = db.session.query(Member).get_or_404(member_id)
     return render_template('statement.html', member=member)
 
 @reports_bp.route('/reports/outstanding-loans')

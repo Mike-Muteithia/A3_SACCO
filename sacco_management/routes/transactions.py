@@ -16,11 +16,11 @@ def index():
     
     if form.validate_on_submit():
         # Lock the member row until this transaction commits/rolls back
-        member = Member.query.with_for_update().get(form.member_id.data)
+        # Acquire lock on the Member row to serialize debit operations
+        member = db.session.query(Member).with_for_update().filter_by(id=form.member_id.data).first_or_404()
         
-        # Prevent overdrafts on withdrawals
         if form.transaction_type.data == 'Withdrawal' and form.amount.data > member.total_savings:
-            flash(f'Insufficient savings. Available balance: KES {member.total_savings:,.2f}', 'danger')
+            flash(f'Overdraft prohibited. Available unencumbered balance: KES {member.total_savings:,.2f}', 'danger')
             return redirect(url_for('transactions.index'))
             
         tx = FinancialTransaction(

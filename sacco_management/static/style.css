@@ -1,0 +1,354 @@
+/*
+ * Akiba Sacco Financial Core - Design System & Custom Components
+ * Color Palette: Forest Green (#0F5132), Slate Dark (#1A252C), Warm Gold (#D4AF37)
+ * Typography: Plus Jakarta Sans / Inter
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --brand-forest: #0F5132;
+    --brand-forest-dark: #0A3622;
+    --brand-forest-light: #E8F5E9;
+    --brand-slate: #1A252C;
+    --brand-slate-light: #2C3E50;
+    --brand-gold: #D4AF37;
+    --brand-gold-hover: #B8972C;
+    --brand-gold-subtle: #FFF8E7;
+    --bg-canvas: #F4F6F8;
+    --bg-card: #FFFFFF;
+    --border-color: #E2E8F0;
+    --text-primary: #1E293B;
+    --text-secondary: #64748B;
+    --text-muted: #94A3B8;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+    --transition-standard: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* --- Layout Architecture --- */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.sidebar {
+    width: 280px;
+    background-color: var(--brand-slate);
+    color: #F8FAFC;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    transition: var(--transition-standard);
+    z-index: 1040;
+}
+
+.sidebar-header {
+    padding: 1.5rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-badge {
+    background: linear-gradient(135deg, var(--brand-forest) 0%, #157347 100%);
+    color: var(--brand-gold);
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 1.15rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+}
+
+.brand-badge:hover {
+    color: var(--brand-gold-subtle);
+}
+
+.sidebar-nav {
+    padding: 1rem 0.75rem;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.nav-section-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 0.75rem 0.75rem 0.25rem 0.75rem;
+    font-weight: 700;
+}
+
+.sidebar-nav .nav-link {
+    color: #CBD5E1;
+    padding: 0.68rem 0.85rem;
+    border-radius: 8px;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: var(--transition-standard);
+}
+
+.sidebar-nav .nav-link i {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    transition: var(--transition-standard);
+}
+
+.sidebar-nav .nav-link:hover {
+    color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-nav .nav-link:hover i {
+    color: var(--brand-gold);
+}
+
+.sidebar-nav .nav-link.active {
+    color: #FFFFFF;
+    background-color: var(--brand-forest);
+    font-weight: 600;
+}
+
+.sidebar-nav .nav-link.active i {
+    color: var(--brand-gold);
+}
+
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* --- Top Header & Profile Bar --- */
+.topbar {
+    background: #FFFFFF;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.85rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+.user-profile-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.4rem 0.85rem;
+    background: var(--bg-canvas);
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+}
+
+.user-avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--brand-slate);
+    color: var(--brand-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+/* --- Financial Stat Metric Cards --- */
+.stat-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-standard);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: #CBD5E1;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.stat-card.primary::before { background: var(--brand-forest); }
+.stat-card.warning::before { background: var(--brand-gold); }
+.stat-card.info::before { background: #0284C7; }
+.stat-card.danger::before { background: #DC2626; }
+
+.stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+}
+
+.stat-icon-primary { background: var(--brand-forest-light); color: var(--brand-forest); }
+.stat-icon-warning { background: var(--brand-gold-subtle); color: var(--brand-gold-hover); }
+.stat-icon-info { background: #E0F2FE; color: #0284C7; }
+.stat-icon-danger { background: #FEE2E2; color: #DC2626; }
+
+.stat-value {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin: 0.35rem 0 0.15rem 0;
+}
+
+.stat-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.trend-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* --- Cards, Tables, Badges --- */
+.card-financial {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.card-financial .card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.15rem 1.5rem;
+}
+
+.table-financial {
+    margin-bottom: 0;
+}
+
+.table-financial th {
+    background-color: #F8FAFC;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table-financial td {
+    padding: 0.95rem 1rem;
+    vertical-align: middle;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.badge-role {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    background: #E2E8F0;
+    color: var(--text-primary);
+}
+
+.badge-role.Manager { background: #FEF3C7; color: #92400E; }
+.badge-role.SystemAdmin { background: #FEE2E2; color: #991B1B; }
+.badge-role.Teller { background: #E0E7FF; color: #3730A3; }
+.badge-role.LoanOfficer { background: #CCFBF1; color: #115E59; }
+.badge-role.Member { background: var(--brand-forest-light); color: var(--brand-forest); }
+
+/* --- Forms & Floating Labels --- */
+.form-floating > .form-control,
+.form-floating > .form-select {
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.form-floating > .form-control:focus,
+.form-floating > .form-select:focus {
+    border-color: var(--brand-forest);
+    box-shadow: 0 0 0 3px rgba(15, 81, 50, 0.15);
+}
+
+.input-group-currency .input-group-text {
+    background-color: #F1F5F9;
+    border-color: var(--border-color);
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.btn-primary-akiba {
+    background-color: var(--brand-forest);
+    border-color: var(--brand-forest);
+    color: #FFFFFF;
+    font-weight: 600;
+    padding: 0.55rem 1.25rem;
+    border-radius: 8px;
+    transition: var(--transition-standard);
+}
+
+.btn-primary-akiba:hover {
+    background-color: var(--brand-forest-dark);
+    border-color: var(--brand-forest-dark);
+    color: #FFFFFF;
+}
+
+.btn-gold {
+    background-color: var(--brand-gold);
+    border-color: var(--brand-gold);
+    color: var(--brand-slate);
+    font-weight: 700;
+}
+
+.btn-gold:hover {
+    background-color: var(--brand-gold-hover);
+    border-color: var(--brand-gold-hover);
+    color: #FFFFFF;
+}
+
+/* --- Responsive Offcanvas Mobile Layout --- */
+@media (max-width: 991.98px) {
+    .sidebar {
+        display: none;
+    }
+}

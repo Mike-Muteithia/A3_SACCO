@@ -1,49 +1,245 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>SACCO</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Akiba Sacco Core Banking & Financial Management Portal">
+    <title>{% block title %}Portal{% endblock %} - Akiba Sacco Core</title>
+
+    <!-- Google Fonts & Bootstrap 5.3.3 CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Restored Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Custom Financial Theme -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('dashboard.index') }}">SACCO Core</a>
-            <div class="collapse navbar-collapse" id="navContent">
-                <ul class="navbar-nav ms-auto">
-                    {% if current_user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
-                        
-                        <!-- Hide generic staff menus from Members -->
-                        {% if current_user.role.name != 'Member' %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('members.index') }}">Members</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('transactions.index') }}">Transactions</a></li>
-                        {% endif %}
-                        
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('loans.index') }}">Loans</a></li>
-                        
-                        {% if current_user.has_permission('REPORT_READ_ALL') %}
-                        <li class="nav-item"><a class="nav-link text-info" href="{{ url_for('reports.consolidated_journal') }}">Ledger</a></li>
-                        <li class="nav-item"><a class="nav-link text-info" href="{{ url_for('reports.outstanding_loans') }}">Loans Report</a></li>
-                        {% endif %}
-                        
-                        {% if current_user.has_permission('USER_MANAGE') %}
-                        <li class="nav-item"><a class="nav-link text-warning" href="{{ url_for('admin.manage_users') }}">Admin Panel</a></li>
-                        {% endif %}
-                        
-                        <li class="nav-item ms-3">
-                            <span class="navbar-text text-light me-3 border-start ps-3">{{ current_user.username }} ({{ current_user.role.name }})</span>
-                        </li>
-                        <li class="nav-item"><a class="btn btn-sm btn-outline-danger mt-1" href="{{ url_for('auth.logout') }}">Logout</a></li>
-                    {% endif %}
-                </ul>
+<body>
+
+<!-- Reusable Jinja Pagination Macro -->
+{% macro render_pagination(pagination, endpoint) %}
+{% if pagination and pagination.pages > 1 %}
+<nav aria-label="Page navigation" class="mt-3">
+    <ul class="pagination pagination-sm justify-content-end mb-0">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{% if pagination.has_prev %}{{ url_for(endpoint, page=pagination.prev_num, **kwargs) }}{% else %}#{% endif %}">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+        </li>
+        {% for page in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page %}
+                <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for(endpoint, page=page, **kwargs) }}">{{ page }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{% if pagination.has_next %}{{ url_for(endpoint, page=pagination.next_num, **kwargs) }}{% else %}#{% endif %}">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endmacro %}
+
+<div class="app-container">
+    {% if current_user.is_authenticated %}
+    <!-- Desktop Persistent Sidebar -->
+    <aside class="sidebar d-none d-lg-flex">
+        <div class="sidebar-header">
+            <a href="{{ url_for('dashboard.index') }}" class="brand-badge w-100 justify-content-center">
+                <i class="bi bi-bank2"></i>
+                <span>AKIBA SACCO</span>
+            </a>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-section-title">Core Banking</div>
+            <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+
+            {% if current_user.role.name != 'Member' %}
+            <a href="{{ url_for('members.index') }}" class="nav-link {% if 'members' in request.endpoint %}active{% endif %}">
+                <i class="bi bi-people"></i> Members Directory
+            </a>
+            <a href="{{ url_for('transactions.index') }}" class="nav-link {% if 'transactions' in request.endpoint %}active{% endif %}">
+                <i class="bi bi-arrow-left-right"></i> Transactions / Cashier
+            </a>
+            {% endif %}
+
+            <a href="{{ url_for('loans.index') }}" class="nav-link {% if 'loans' in request.endpoint %}active{% endif %}">
+                <i class="bi bi-cash-stack"></i> Credit & Loans
+            </a>
+
+            {% if current_user.has_permission('REPORT_READ_ALL') %}
+            <div class="nav-section-title mt-2">Financial Auditing</div>
+            <a href="{{ url_for('reports.consolidated_journal') }}" class="nav-link {% if request.endpoint == 'reports.consolidated_journal' %}active{% endif %}">
+                <i class="bi bi-journal-check"></i> General Ledger
+            </a>
+            <a href="{{ url_for('reports.outstanding_loans') }}" class="nav-link {% if request.endpoint == 'reports.outstanding_loans' %}active{% endif %}">
+                <i class="bi bi-pie-chart"></i> Portfolio at Risk (PAR)
+            </a>
+            {% endif %}
+
+            {% if current_user.has_permission('USER_MANAGE') or current_user.has_permission('SYSTEM_CONFIG') %}
+            <div class="nav-section-title mt-2">Governance & SecOps</div>
+            {% if current_user.has_permission('USER_MANAGE') %}
+            <a href="{{ url_for('admin.manage_users') }}" class="nav-link {% if 'admin' in request.endpoint %}active{% endif %}">
+                <i class="bi bi-shield-lock"></i> RBAC Management
+            </a>
+            {% endif %}
+            {% if current_user.has_permission('SYSTEM_CONFIG') %}
+            <a href="{{ url_for('dashboard.system_logs') }}" class="nav-link {% if request.endpoint == 'dashboard.system_logs' %}active{% endif %}">
+                <i class="bi bi-file-earmark-text"></i> Audit Trails
+            </a>
+            {% endif %}
+            {% endif %}
+        </div>
+        <div class="p-3 border-top border-secondary border-opacity-25">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-danger w-100">
+                <i class="bi bi-box-arrow-right me-1"></i> Terminate Session
+            </a>
+        </div>
+    </aside>
+
+    <!-- Mobile Responsive Offcanvas Drawer -->
+    <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h5 class="offcanvas-title text-warning fw-bold" id="mobileSidebarLabel"><i class="bi bi-bank2 me-2"></i>Akiba Sacco</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="sidebar-nav">
+                <a href="{{ url_for('dashboard.index') }}" class="nav-link text-white"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                {% if current_user.role.name != 'Member' %}
+                <a href="{{ url_for('members.index') }}" class="nav-link text-white"><i class="bi bi-people"></i> Members Directory</a>
+                <a href="{{ url_for('transactions.index') }}" class="nav-link text-white"><i class="bi bi-arrow-left-right"></i> Transactions</a>
+                {% endif %}
+                <a href="{{ url_for('loans.index') }}" class="nav-link text-white"><i class="bi bi-cash-stack"></i> Credit & Loans</a>
+                <a href="{{ url_for('auth.logout') }}" class="nav-link text-danger mt-3"><i class="bi bi-box-arrow-right"></i> Logout</a>
             </div>
         </div>
-    </nav>
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, msg in messages %}
-            <div class="alert alert-{{ category }}">{{ msg }}</div>
-        {% endfor %}{% endif %}{% endwith %}
-        {% block content %}{% endblock %}
     </div>
+    {% endif %}
+
+    <!-- Main Viewport -->
+    <main class="main-content">
+        {% if current_user.is_authenticated %}
+        <header class="topbar">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <h5 class="mb-0 fw-bold text-secondary">{% block header_title %}Overview{% endblock %}</h5>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="user-profile-chip">
+                    <div class="user-avatar-circle">
+                        {{ current_user.username[:1]|upper }}
+                    </div>
+                    <div class="d-none d-sm-block text-start">
+                        <div class="fw-bold small lh-1">{{ current_user.username }}</div>
+                        <span class="badge-role {{ current_user.role.name }}">{{ current_user.role.name }}</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+        {% endif %}
+
+        <div class="p-3 p-md-4">
+            <!-- Flash Notification Messaging -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, msg in messages %}
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show shadow-sm border-0 d-flex align-items-center gap-2 mb-4" role="alert">
+                            {% if category == 'success' %}<i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            {% elif category == 'danger' or category == 'error' %}<i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                            {% elif category == 'warning' %}<i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
+                            {% else %}<i class="bi bi-info-circle-fill text-info fs-5"></i>{% endif %}
+                            <div class="flex-grow-1">{{ msg }}</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Error Handler Block (if rendering an error response) -->
+            {% if error_code %}
+            <div class="card card-financial text-center py-5">
+                <div class="card-body">
+                    <h1 class="display-3 fw-bold text-danger">{{ error_code }}</h1>
+                    <h4 class="fw-bold text-dark">{{ error_title }}</h4>
+                    <p class="text-secondary max-w-lg mx-auto">{{ error_msg }}</p>
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary-akiba mt-3">
+                        <i class="bi bi-house-door me-1"></i> Return to Safe Dashboard
+                    </a>
+                </div>
+            </div>
+            {% else %}
+                {% block content %}{% endblock %}
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<!-- Modal Confirmation Component (Replaces native window.confirm) -->
+<div class="modal fade" id="akibaConfirmModal" tabindex="-1" aria-labelledby="akibaConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold" id="akibaConfirmModalLabel">Confirm Financial Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p id="akibaModalMessage" class="mb-0 text-secondary">Are you sure you wish to commit this ledger action?</p>
+            </div>
+            <div class="modal-footer border-top bg-light">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="akibaModalSubmitBtn" class="btn btn-sm btn-danger fw-bold">Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Universal Event Delegation for Secure Confirmation Dialogues
+    document.addEventListener('DOMContentLoaded', () => {
+        let activeTargetForm = null;
+        const modalElement = document.getElementById('akibaConfirmModal');
+        const confirmModal = modalElement ? new bootstrap.Modal(modalElement) : null;
+        const modalMessage = document.getElementById('akibaModalMessage');
+        const submitBtn = document.getElementById('akibaModalSubmitBtn');
+
+        document.querySelectorAll('[data-confirm]').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                activeTargetForm = this.closest('form');
+                const customMessage = this.getAttribute('data-confirm') || "Proceed with this operation?";
+                modalMessage.textContent = customMessage;
+                confirmModal.show();
+            });
+        });
+
+        if (submitBtn) {
+            submitBtn.addEventListener('click', () => {
+                if (activeTargetForm) {
+                    activeTargetForm.submit();
+                }
+            });
+        }
+    });
+</script>
+{% block extra_scripts %}{% endblock %}
 </body>
 </html>

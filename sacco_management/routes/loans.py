@@ -45,7 +45,7 @@ def index():
 @loans_bp.route('/loans/<int:loan_id>/<action>', methods=['POST'])
 @login_required
 def action(loan_id, action):
-    loan = Loan.query.get_or_404(loan_id)
+    loan = db.session.query(Loan).with_for_update().filter_by(id=loan_id).first_or_404()
     
     # RBAC: Tiered Approval Logic
     if loan.principal > 500000:
@@ -82,7 +82,7 @@ def action(loan_id, action):
 @login_required
 def repay(loan_id):
     # (Keep existing repayment logic from Current State)
-    loan = Loan.query.get_or_404(loan_id)
+    loan = db.session.query(Loan).with_for_update().filter_by(id=loan_id).first_or_404()
     form = RepaymentForm()
     if form.validate_on_submit():
         repayment = LoanRepayment(loan_id=loan.id, amount=form.amount.data, reference=form.reference.data)
