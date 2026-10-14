@@ -1,26 +1,46 @@
 {% extends 'base.html' %}
+{% from "_macros.html" import render_field %}
+
+{% block title %}Secure Login{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-4 mt-5">
-        <div class="card shadow border-0">
-            <div class="card-header bg-dark text-white text-center">
-                <h4 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Staff Login</h4>
+<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="col-11 col-sm-8 col-md-6 col-lg-4">
+        
+        <div class="text-center mb-4">
+            <div class="brand-badge d-inline-flex mb-3 shadow-sm px-4 py-2 fs-4">
+                <i class="bi bi-bank2 me-2"></i> AKIBA SACCO
             </div>
-            <div class="card-body">
+            <h4 class="fw-bold text-dark mb-1">Secure Portal Access</h4>
+            <p class="text-secondary small">Please authenticate to continue to the ledger.</p>
+        </div>
+
+        <div class="card card-financial border-0 shadow-lg">
+            <div class="card-body p-4 p-md-5">
                 <form method="POST">
                     {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.username.label(class="form-label") }}
-                        {{ form.username(class="form-control") }}
+                    
+                    <div class="mb-4">
+                        {{ render_field(form.username, placeholder="Enter Staff or Member ID") }}
                     </div>
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control") }}
+                    
+                    <div class="mb-4">
+                        {{ render_field(form.password, placeholder="Enter Password") }}
                     </div>
-                    {{ form.submit(class="btn btn-primary w-100 fw-bold") }}
+                    
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary-akiba btn-lg shadow-sm">
+                            <i class="bi bi-shield-lock-fill me-2"></i> Secure Login
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
+
+        <div class="text-center mt-4">
+            <p class="small text-muted mb-0"><i class="bi bi-lock-fill me-1"></i> 256-bit Encrypted Connection</p>
+        </div>
+        
     </div>
 </div>
 {% endblock %}

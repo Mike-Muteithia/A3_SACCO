@@ -6,23 +6,18 @@
     <meta name="description" content="Akiba Sacco Core Banking & Financial Management Portal">
     <title>{% block title %}Portal{% endblock %} - Akiba Sacco Core</title>
     
-    <!-- Google Fonts & Bootstrap 5.3.3 CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
-    <!-- DataTables CSS for Interactive Tables -->
     <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     
-    <!-- Custom Financial Theme -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=3.0">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
 
-<!-- Reusable Jinja Pagination Macro -->
 {% macro render_pagination(pagination, endpoint) %}
 {% if pagination and pagination.pages > 1 %}
 <nav aria-label="Page navigation" class="mt-3">
@@ -47,73 +42,78 @@
 {% endif %}
 {% endmacro %}
 
+<!-- NEW: Centralized Navigation Macro -->
+{% macro render_navigation() %}
+    <div class="nav-section-title">Core Banking</div>
+    <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    {% if current_user.role.name != 'Member' %}
+    <a href="{{ url_for('members.index') }}" class="nav-link {% if 'members' in request.endpoint %}active{% endif %}"><i class="bi bi-people"></i> Members Directory</a>
+    <a href="{{ url_for('transactions.index') }}" class="nav-link {% if 'transactions' in request.endpoint %}active{% endif %}"><i class="bi bi-arrow-left-right"></i> Transactions / Cashier</a>
+    {% endif %}
+    <a href="{{ url_for('loans.index') }}" class="nav-link {% if 'loans' in request.endpoint %}active{% endif %}"><i class="bi bi-cash-stack"></i> Credit & Loans</a>
+    
+    {% if current_user.has_permission('REPORT_READ_ALL') %}
+    <div class="nav-section-title mt-3">Financial Auditing</div>
+    <a href="{{ url_for('reports.consolidated_journal') }}" class="nav-link {% if request.endpoint == 'reports.consolidated_journal' %}active{% endif %}"><i class="bi bi-journal-check"></i> General Ledger</a>
+    <a href="{{ url_for('reports.outstanding_loans') }}" class="nav-link {% if request.endpoint == 'reports.outstanding_loans' %}active{% endif %}"><i class="bi bi-pie-chart"></i> Portfolio at Risk (PAR)</a>
+    {% endif %}
+    
+    {% if current_user.has_permission('USER_MANAGE') or current_user.has_permission('SYSTEM_CONFIG') %}
+    <div class="nav-section-title mt-3">Governance & SecOps</div>
+    {% if current_user.has_permission('USER_MANAGE') %}
+    <a href="{{ url_for('admin.manage_users') }}" class="nav-link {% if 'admin' in request.endpoint %}active{% endif %}"><i class="bi bi-shield-lock"></i> RBAC Management</a>
+    {% endif %}
+    {% if current_user.has_permission('SYSTEM_CONFIG') %}
+    <a href="{{ url_for('dashboard.system_logs') }}" class="nav-link {% if request.endpoint == 'dashboard.system_logs' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Audit Trails</a>
+    {% endif %}
+    {% endif %}
+{% endmacro %}
+
 <div class="app-container">
     {% if current_user.is_authenticated %}
+    
     <!-- Desktop Persistent Sidebar -->
     <aside class="sidebar d-none d-lg-flex">
         <div class="sidebar-header">
-            <a href="{{ url_for('dashboard.index') }}" class="brand-badge w-100 justify-content-center">
+            <a href="{{ url_for('dashboard.index') }}" class="brand-badge w-100 justify-content-center shadow-sm">
                 <i class="bi bi-bank2"></i>
                 <span>AKIBA SACCO</span>
             </a>
         </div>
         <div class="sidebar-nav">
-            <div class="nav-section-title">Core Banking</div>
-            <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
-                <i class="bi bi-speedometer2"></i> Dashboard
-            </a>
-            {% if current_user.role.name != 'Member' %}
-            <a href="{{ url_for('members.index') }}" class="nav-link {% if 'members' in request.endpoint %}active{% endif %}">
-                <i class="bi bi-people"></i> Members Directory
-            </a>
-            <a href="{{ url_for('transactions.index') }}" class="nav-link {% if 'transactions' in request.endpoint %}active{% endif %}">
-                <i class="bi bi-arrow-left-right"></i> Transactions / Cashier
-            </a>
-            {% endif %}
-            <a href="{{ url_for('loans.index') }}" class="nav-link {% if 'loans' in request.endpoint %}active{% endif %}">
-                <i class="bi bi-cash-stack"></i> Credit & Loans
-            </a>
-            {% if current_user.has_permission('REPORT_READ_ALL') %}
-            <div class="nav-section-title mt-2">Financial Auditing</div>
-            <a href="{{ url_for('reports.consolidated_journal') }}" class="nav-link {% if request.endpoint == 'reports.consolidated_journal' %}active{% endif %}">
-                <i class="bi bi-journal-check"></i> General Ledger
-            </a>
-            <a href="{{ url_for('reports.outstanding_loans') }}" class="nav-link {% if request.endpoint == 'reports.outstanding_loans' %}active{% endif %}">
-                <i class="bi bi-pie-chart"></i> Portfolio at Risk (PAR)
-            </a>
-            {% endif %}
-            {% if current_user.has_permission('USER_MANAGE') or current_user.has_permission('SYSTEM_CONFIG') %}
-            <div class="nav-section-title mt-2">Governance & SecOps</div>
-            {% if current_user.has_permission('USER_MANAGE') %}
-            <a href="{{ url_for('admin.manage_users') }}" class="nav-link {% if 'admin' in request.endpoint %}active{% endif %}"><i class="bi bi-shield-lock"></i> RBAC Management</a>
-            {% endif %}
-            {% if current_user.has_permission('SYSTEM_CONFIG') %}
-            <a href="{{ url_for('dashboard.system_logs') }}" class="nav-link {% if request.endpoint == 'dashboard.system_logs' %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Audit Trails</a>
-            {% endif %}
-            {% endif %}
+            {{ render_navigation() }}
         </div>
         <div class="p-3 border-top border-secondary border-opacity-25">
-            <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-danger w-100">
-                <i class="bi bi-box-arrow-right me-1"></i> Terminate Session
-            </a>
+            <div class="d-flex align-items-center mb-3 px-2">
+                <div class="user-avatar-circle me-3 bg-dark border border-secondary">{{ current_user.username[:1]|upper }}</div>
+                <div class="overflow-hidden">
+                    <div class="fw-bold text-white small text-truncate mb-0 lh-1">{{ current_user.username }}</div>
+                    <span class="badge bg-secondary bg-opacity-25 text-light fw-normal mt-1" style="font-size: 0.65rem;">{{ current_user.role.name }} Account</span>
+                </div>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-danger w-100 fw-bold shadow-sm"><i class="bi bi-box-arrow-right me-1"></i> Secure Logout</a>
         </div>
     </aside>
 
     <!-- Mobile Responsive Offcanvas Drawer -->
-    <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
-        <div class="offcanvas-header border-bottom border-secondary">
-            <h5 class="offcanvas-title text-warning fw-bold" id="mobileSidebarLabel"><i class="bi bi-bank2 me-2"></i>Akiba Sacco</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel" style="background-color: var(--brand-slate); color: #F8FAFC; width: 280px; border-right: 1px solid rgba(255, 255, 255, 0.08);">
+        <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+            <div class="brand-badge fs-5 px-3 py-2 w-100 text-center shadow-sm"><i class="bi bi-bank2 me-2"></i>AKIBA SACCO</div>
+            <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
-        <div class="offcanvas-body p-0">
-            <div class="sidebar-nav">
-                <a href="{{ url_for('dashboard.index') }}" class="nav-link text-white"><i class="bi bi-speedometer2"></i> Dashboard</a>
-                {% if current_user.role.name != 'Member' %}
-                <a href="{{ url_for('members.index') }}" class="nav-link text-white"><i class="bi bi-people"></i> Members Directory</a>
-                <a href="{{ url_for('transactions.index') }}" class="nav-link text-white"><i class="bi bi-arrow-left-right"></i> Transactions</a>
-                {% endif %}
-                <a href="{{ url_for('loans.index') }}" class="nav-link text-white"><i class="bi bi-cash-stack"></i> Credit & Loans</a>
-                <a href="{{ url_for('auth.logout') }}" class="nav-link text-danger mt-3"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        <div class="offcanvas-body p-0 d-flex flex-column">
+            <div class="sidebar-nav flex-grow-1">
+                {{ render_navigation() }}
+            </div>
+            <div class="p-3 border-top border-secondary border-opacity-25">
+                <div class="d-flex align-items-center mb-3 px-2">
+                    <div class="user-avatar-circle me-3 bg-dark border border-secondary">{{ current_user.username[:1]|upper }}</div>
+                    <div class="overflow-hidden">
+                        <div class="fw-bold text-white small text-truncate mb-0 lh-1">{{ current_user.username }}</div>
+                        <span class="badge bg-secondary bg-opacity-25 text-light fw-normal mt-1" style="font-size: 0.65rem;">{{ current_user.role.name }} Account</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-danger w-100 fw-bold shadow-sm"><i class="bi bi-box-arrow-right me-1"></i> Secure Logout</a>
             </div>
         </div>
     </div>
@@ -122,14 +122,14 @@
     <!-- Main Viewport -->
     <main class="main-content">
         {% if current_user.is_authenticated %}
-        <header class="topbar">
+        <header class="topbar shadow-sm">
             <div class="d-flex align-items-center gap-2">
-                <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar"><i class="bi bi-list fs-5"></i></button>
+                <button class="btn btn-sm btn-outline-secondary d-lg-none shadow-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar"><i class="bi bi-list fs-5"></i></button>
                 <h5 class="mb-0 fw-bold text-secondary">{% block header_title %}Overview{% endblock %}</h5>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <div class="user-profile-chip">
-                    <div class="user-avatar-circle">{{ current_user.username[:1]|upper }}</div>
+                <div class="user-profile-chip shadow-sm">
+                    <div class="user-avatar-circle shadow-sm">{{ current_user.username[:1]|upper }}</div>
                     <div class="d-none d-sm-block text-start">
                         <div class="fw-bold small lh-1">{{ current_user.username }}</div>
                         <span class="badge-role {{ current_user.role.name }}">{{ current_user.role.name }}</span>
@@ -156,12 +156,12 @@
             {% endwith %}
 
             {% if error_code %}
-            <div class="card card-financial text-center py-5">
+            <div class="card card-financial text-center py-5 shadow-sm">
                 <div class="card-body">
                     <h1 class="display-3 fw-bold text-danger">{{ error_code }}</h1>
                     <h4 class="fw-bold text-dark">{{ error_title }}</h4>
                     <p class="text-secondary max-w-lg mx-auto">{{ error_msg }}</p>
-                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary-akiba mt-3"><i class="bi bi-house-door me-1"></i> Return to Safe Dashboard</a>
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary-akiba mt-3 shadow-sm"><i class="bi bi-house-door me-1"></i> Return to Safe Dashboard</a>
                 </div>
             </div>
             {% else %}
@@ -190,7 +190,6 @@
     </div>
 </div>
 
-<!-- Core JS Dependencies -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>

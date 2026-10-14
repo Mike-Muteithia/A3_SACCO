@@ -3,9 +3,7 @@
  * Color Palette: Forest Green (#0F5132), Slate Dark (#1A252C), Warm Gold (#D4AF37)
  * Typography: Plus Jakarta Sans / Inter
  */
-
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
 :root {
     --brand-forest: #0F5132;
     --brand-forest-dark: #0A3622;
@@ -26,7 +24,6 @@
     --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
     --transition-standard: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg-canvas);
@@ -34,14 +31,12 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
 }
-
 /* --- Layout Architecture --- */
 .app-container {
     display: flex;
     min-height: 100vh;
     width: 100%;
 }
-
 .sidebar {
     width: 280px;
     background-color: var(--brand-slate);
@@ -52,13 +47,29 @@ body {
     border-right: 1px solid rgba(255, 255, 255, 0.08);
     transition: var(--transition-standard);
     z-index: 1040;
+    
+    /* NEW: Pin the sidebar to the viewport */
+    height: 100vh;
+    position: sticky;
+    top: 0;
+}
+
+/* NEW: Custom sleek scrollbar for the sidebar nav */
+.sidebar-nav::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
 }
 
 .sidebar-header {
     padding: 1.5rem 1.25rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-
 .brand-badge {
     background: linear-gradient(135deg, var(--brand-forest) 0%, #157347 100%);
     color: var(--brand-gold);
@@ -72,17 +83,14 @@ body {
     letter-spacing: -0.02em;
     text-decoration: none;
 }
-
 .brand-badge:hover {
     color: var(--brand-gold-subtle);
 }
-
 .sidebar-nav {
     padding: 1rem 0.75rem;
     flex-grow: 1;
     overflow-y: auto;
 }
-
 .nav-section-title {
     font-size: 0.7rem;
     text-transform: uppercase;
@@ -91,7 +99,6 @@ body {
     padding: 0.75rem 0.75rem 0.25rem 0.75rem;
     font-weight: 700;
 }
-
 .sidebar-nav .nav-link {
     color: #CBD5E1;
     padding: 0.68rem 0.85rem;
@@ -103,39 +110,32 @@ body {
     gap: 0.75rem;
     transition: var(--transition-standard);
 }
-
 .sidebar-nav .nav-link i {
     font-size: 1.15rem;
     color: var(--text-muted);
     transition: var(--transition-standard);
 }
-
 .sidebar-nav .nav-link:hover {
     color: #FFFFFF;
     background-color: rgba(255, 255, 255, 0.06);
 }
-
 .sidebar-nav .nav-link:hover i {
     color: var(--brand-gold);
 }
-
 .sidebar-nav .nav-link.active {
     color: #FFFFFF;
     background-color: var(--brand-forest);
     font-weight: 600;
 }
-
 .sidebar-nav .nav-link.active i {
     color: var(--brand-gold);
 }
-
 .main-content {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     min-width: 0;
 }
-
 /* --- Top Header & Profile Bar --- */
 .topbar {
     background: #FFFFFF;
@@ -148,7 +148,6 @@ body {
     top: 0;
     z-index: 1020;
 }
-
 .user-profile-chip {
     display: inline-flex;
     align-items: center;
@@ -158,7 +157,6 @@ body {
     border-radius: 9999px;
     border: 1px solid var(--border-color);
 }
-
 .user-avatar-circle {
     width: 32px;
     height: 32px;
@@ -171,7 +169,6 @@ body {
     font-size: 0.85rem;
     font-weight: 700;
 }
-
 /* --- Financial Stat Metric Cards --- */
 .stat-card {
     background: var(--bg-card);
@@ -183,13 +180,11 @@ body {
     position: relative;
     overflow: hidden;
 }
-
 .stat-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
     border-color: #CBD5E1;
 }
-
 .stat-card::before {
     content: '';
     position: absolute;
@@ -198,12 +193,10 @@ body {
     right: 0;
     height: 4px;
 }
-
 .stat-card.primary::before { background: var(--brand-forest); }
 .stat-card.warning::before { background: var(--brand-gold); }
 .stat-card.info::before { background: #0284C7; }
 .stat-card.danger::before { background: #DC2626; }
-
 .stat-icon-wrapper {
     width: 48px;
     height: 48px;
@@ -213,12 +206,10 @@ body {
     justify-content: center;
     font-size: 1.35rem;
 }
-
 .stat-icon-primary { background: var(--brand-forest-light); color: var(--brand-forest); }
 .stat-icon-warning { background: var(--brand-gold-subtle); color: var(--brand-gold-hover); }
 .stat-icon-info { background: #E0F2FE; color: #0284C7; }
 .stat-icon-danger { background: #FEE2E2; color: #DC2626; }
-
 .stat-value {
     font-size: 1.65rem;
     font-weight: 700;
@@ -226,7 +217,6 @@ body {
     letter-spacing: -0.02em;
     margin: 0.35rem 0 0.15rem 0;
 }
-
 .stat-label {
     font-size: 0.78rem;
     text-transform: uppercase;
@@ -234,7 +224,6 @@ body {
     font-weight: 600;
     color: var(--text-secondary);
 }
-
 .trend-badge {
     font-size: 0.72rem;
     font-weight: 600;
@@ -244,7 +233,6 @@ body {
     align-items: center;
     gap: 0.25rem;
 }
-
 /* --- Cards, Tables, Badges --- */
 .card-financial {
     background: var(--bg-card);
@@ -253,17 +241,14 @@ body {
     box-shadow: var(--shadow-sm);
     margin-bottom: 1.5rem;
 }
-
 .card-financial .card-header {
     background: transparent;
     border-bottom: 1px solid var(--border-color);
     padding: 1.15rem 1.5rem;
 }
-
 .table-financial {
     margin-bottom: 0;
 }
-
 .table-financial th {
     background-color: #F8FAFC;
     color: var(--text-secondary);
@@ -274,14 +259,12 @@ body {
     padding: 0.85rem 1rem;
     border-bottom: 1px solid var(--border-color);
 }
-
 .table-financial td {
     padding: 0.95rem 1rem;
     vertical-align: middle;
     font-size: 0.875rem;
     border-bottom: 1px solid var(--border-color);
 }
-
 .badge-role {
     font-size: 0.7rem;
     font-weight: 600;
@@ -290,33 +273,28 @@ body {
     background: #E2E8F0;
     color: var(--text-primary);
 }
-
 .badge-role.Manager { background: #FEF3C7; color: #92400E; }
 .badge-role.SystemAdmin { background: #FEE2E2; color: #991B1B; }
 .badge-role.Teller { background: #E0E7FF; color: #3730A3; }
 .badge-role.LoanOfficer { background: #CCFBF1; color: #115E59; }
 .badge-role.Member { background: var(--brand-forest-light); color: var(--brand-forest); }
-
 /* --- Forms & Floating Labels --- */
 .form-floating > .form-control,
 .form-floating > .form-select {
     border-radius: 8px;
     border: 1px solid var(--border-color);
 }
-
 .form-floating > .form-control:focus,
 .form-floating > .form-select:focus {
     border-color: var(--brand-forest);
     box-shadow: 0 0 0 3px rgba(15, 81, 50, 0.15);
 }
-
 .input-group-currency .input-group-text {
     background-color: #F1F5F9;
     border-color: var(--border-color);
     font-weight: 600;
     color: var(--text-secondary);
 }
-
 .btn-primary-akiba {
     background-color: var(--brand-forest);
     border-color: var(--brand-forest);
@@ -326,26 +304,22 @@ body {
     border-radius: 8px;
     transition: var(--transition-standard);
 }
-
 .btn-primary-akiba:hover {
     background-color: var(--brand-forest-dark);
     border-color: var(--brand-forest-dark);
     color: #FFFFFF;
 }
-
 .btn-gold {
     background-color: var(--brand-gold);
     border-color: var(--brand-gold);
     color: var(--brand-slate);
     font-weight: 700;
 }
-
 .btn-gold:hover {
     background-color: var(--brand-gold-hover);
     border-color: var(--brand-gold-hover);
     color: #FFFFFF;
 }
-
 /* --- Responsive Offcanvas Mobile Layout --- */
 @media (max-width: 991.98px) {
     .sidebar {
